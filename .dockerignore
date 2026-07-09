@@ -1,0 +1,20 @@
+node_modules
+dist
+dist-ssr
+.vite
+.git
+.gitignore
+.DS_Store
+*.local
+*.log
+
+# Backend build context is separate; don't ship it into the web image.
+server
+
+# Editor/doc bits not needed in the build context.
+# NOTE: nginx.conf IS needed (copied by the runtime stage) — keep it.
+Dockerfile
+.dockerignore
+docker-compose.yml
+README.md
+GAME_DESIGN.md

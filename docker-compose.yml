@@ -1,0 +1,57 @@
+# Deploy Rush — full stack (leaderboard API + web).
+#
+#   docker compose up --build
+#   → game on   http://localhost:8080
+#     API on    http://localhost:8080/api  (proxied) and :8787 (direct)
+#
+# Optional hardening via env (see server/.env.example):
+#   SUBMIT_TOKEN, ALLOWED_ORIGINS, EXTRA_BLOCKLIST, IP_HASH_SALT, VITE_SUBMIT_TOKEN
+
+services:
+  api:
+    build: ./server
+    environment:
+      PORT: "8787"
+      STORE: sqlite
+      # Trust the nginx hop so rate limiting sees the real client IP.
+      TRUST_PROXY: "1"
+      # Leave empty to allow all origins; the web talks to /api same-origin.
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-}"
+      SUBMIT_TOKEN: "${SUBMIT_TOKEN:-}"
+      EXTRA_BLOCKLIST: "${EXTRA_BLOCKLIST:-}"
+      IP_HASH_SALT: "${IP_HASH_SALT:-}"
+    volumes:
+      # Persist the SQLite database across restarts.
+      - leaderboard-data:/app/data
+    expose:
+      - "8787"
+    ports:
+      # Optional: expose the API directly for debugging/tools.
+      - "8787:8787"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:8787/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  web:
+    build:
+      context: .
+      args:
+        # Baked into the client only if the backend requires auth.
+        VITE_SUBMIT_TOKEN: "${VITE_SUBMIT_TOKEN:-}"
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  leaderboard-data:

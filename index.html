@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deploy Rush</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #0b1020;
+        font-family: 'Segoe UI', 'Trebuchet MS', system-ui, -apple-system, sans-serif;
+        overflow: hidden;
+      }
+      #app {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        background: #0b1020;
+      }
+      #game-root {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        max-width: 100vw;
+        max-height: 100vh;
+        max-height: 100dvh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="game-root"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
