@@ -9,10 +9,35 @@ zone, and press the correct action before the card escapes.
 
 ![Deploy Rush main menu](docs/screenshots/main-menu.png)
 
-Built with **Phaser 3 + TypeScript + Vite**. It runs fully offline by default,
+Built with **Phaser 4 + TypeScript + Vite**. It runs fully offline by default,
 with an optional online leaderboard backend.
 
 ## Start Playing
+
+### Recommended: Docker Compose
+
+Run the complete stack with one command:
+
+```bash
+docker compose up --build
+```
+
+- Game: <http://localhost:8080>
+- API through nginx: <http://localhost:8080/api>
+- Direct API: <http://localhost:8787>
+
+This starts the web build and the optional leaderboard backend together. Scores
+persist in the `leaderboard-data` Docker volume.
+
+Stop the stack with:
+
+```bash
+docker compose down
+```
+
+Add `-v` if you also want to remove the leaderboard volume.
+
+### Local Development
 
 ```bash
 npm install
@@ -30,7 +55,7 @@ npm run typecheck  # TypeScript check only
 npm test           # run unit tests
 ```
 
-Requirements: Node 18+.
+Requirements: Node 18+. Docker Compose is enough for the recommended path.
 
 ## Screen Tour
 
@@ -327,19 +352,10 @@ The backend includes helmet security headers, CORS allowlisting, rate limiting,
 optional submit-token auth, handle moderation, anti-cheat validation, and salted
 IP hashing.
 
-## Docker
+## Docker Details
 
-Run the game and backend together:
-
-```bash
-docker compose up --build
-```
-
-- Game: <http://localhost:8080>
-- API through nginx: <http://localhost:8080/api>
-- Direct API: <http://localhost:8787>
-
-Scores persist in the `leaderboard-data` Docker volume.
+Docker Compose builds the Vite frontend, serves it through nginx, starts the
+leaderboard API, and proxies `/api` to the backend container.
 
 Optional hardening example:
 
@@ -349,13 +365,8 @@ ALLOWED_ORIGINS=http://localhost:8080 \
 docker compose up --build
 ```
 
-Stop with:
-
-```bash
-docker compose down
-```
-
-Add `-v` to also remove the leaderboard volume.
+Runtime files: [docker-compose.yml](docker-compose.yml), [Dockerfile](Dockerfile),
+[nginx.conf](nginx.conf), and [server/Dockerfile](server/Dockerfile).
 
 ## Developer Notes
 

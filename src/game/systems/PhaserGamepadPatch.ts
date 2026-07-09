@@ -1,7 +1,8 @@
 /**
- * Phaser 3.90 can leave sparse entries in GamepadPlugin.gamepads when the
- * browser reports a pad with an index greater than 0. Scene shutdown then
- * calls removeAllListeners on every array slot without checking holes.
+ * Some browser/gamepad combinations can leave sparse entries in
+ * GamepadPlugin.gamepads when the browser reports a pad with an index greater
+ * than 0. Scene shutdown must ignore holes instead of calling
+ * removeAllListeners on undefined slots.
  */
 import Phaser from 'phaser';
 
