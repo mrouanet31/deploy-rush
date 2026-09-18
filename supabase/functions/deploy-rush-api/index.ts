@@ -207,7 +207,15 @@ function validateSubmission(body: unknown):
 
   const daily = Boolean(value.daily);
   const seed = toInt(value.seed);
-  if (daily && seed === null) return fail(400, "daily submissions require a seed");
+  if (daily) {
+    if (seed === null) return fail(400, "daily submissions require a seed");
+    const now = new Date();
+    const today = seedForDate(now);
+    const yesterday = seedForDate(new Date(now.getTime() - 24 * 60 * 60 * 1000));
+    if (seed !== today && seed !== yesterday) {
+      return fail(422, "daily seed is not for the current challenge");
+    }
+  }
 
   return {
     ok: true,
@@ -269,6 +277,10 @@ function normalizeBadges(raw: unknown) {
   }
 
   return badges;
+}
+
+function seedForDate(date: Date) {
+  return date.getUTCFullYear() * 10000 + (date.getUTCMonth() + 1) * 100 + date.getUTCDate();
 }
 
 function clampLimit(raw: string | null) {
