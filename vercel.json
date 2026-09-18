@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "dist",
   "redirects": [
     {
       "source": "/",
@@ -10,16 +11,6 @@
       "source": "/deploy-rush",
       "destination": "/deploy-rush/",
       "permanent": false
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/deploy-rush/assets/:path*",
-      "destination": "/assets/:path*"
-    },
-    {
-      "source": "/deploy-rush/:path*",
-      "destination": "/index.html"
     }
   ]
 }
