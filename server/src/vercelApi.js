@@ -1,102 +1,39 @@
 /**
  * Vercel Function handlers for the production leaderboard API.
  *
- * The browser calls /api/* on the same Vercel domain. Persistence is provided
- * by Supabase via SupabaseStore.
+ * The browser calls /api/* on the Vercel domain. These handlers proxy to the
+ * Supabase Edge Function that owns privileged database access and validation.
  */
-import { validateSubmission } from './validation.js';
-import { SupabaseStore } from './supabaseStore.js';
 
-const MAX_LIMIT = 50;
-const store = new SupabaseStore();
+const EDGE_BASE = 'https://qtvcjdibtypqeepvmkkp.supabase.co/functions/v1/deploy-rush-api';
 
 export async function handleHealth(req, res) {
   if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
-  return run(res, async () => {
-    const entries = await store.count();
-    res.status(200).json({ ok: true, store: store.kind, entries });
-  });
+  return proxy(req, res, '/health');
 }
 
 export async function handleGlobal(req, res) {
   if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
-  return run(res, async () => {
-    const entries = await store.board({ daily: false, limit: clampLimit(req.query?.limit) });
-    res.status(200).json({ mode: 'global', entries });
-  });
+  const query = new URLSearchParams();
+  if (req.query?.limit != null) query.set('limit', String(req.query.limit));
+  return proxy(req, res, `/leaderboard/global?${query.toString()}`);
 }
 
 export async function handleDaily(req, res) {
   if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
-
-  const seed = Number.parseInt(String(req.query?.seed ?? ''), 10);
-  if (!Number.isInteger(seed)) {
-    return res.status(400).json({ error: 'seed (YYYYMMDD integer) is required' });
-  }
-
-  return run(res, async () => {
-    const entries = await store.board({
-      daily: true,
-      seed,
-      limit: clampLimit(req.query?.limit)
-    });
-    res.status(200).json({ mode: 'daily', seed, entries });
-  });
+  const query = new URLSearchParams();
+  if (req.query?.seed != null) query.set('seed', String(req.query.seed));
+  if (req.query?.limit != null) query.set('limit', String(req.query.limit));
+  return proxy(req, res, `/leaderboard/daily?${query.toString()}`);
 }
 
 export async function handleScores(req, res) {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
-
-  const submitToken = process.env.SUBMIT_TOKEN || '';
-  if (submitToken && String(req.headers?.['x-api-key'] || '') !== submitToken) {
-    return res.status(401).json({ error: 'unauthorized' });
-  }
-
-  let body;
-  try {
-    body = parseBody(req.body);
-  } catch {
-    return res.status(400).json({ error: 'invalid JSON body' });
-  }
-
-  const parsed = validateSubmission(body, {
-    blocklist: splitEnv(process.env.EXTRA_BLOCKLIST)
+  return proxy(req, res, '/scores', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req.body ?? {})
   });
-  if (!parsed.ok) {
-    return res.status(parsed.status).json({ error: parsed.error });
-  }
-
-  return run(res, async () => {
-    const { entry, rank } = await store.add({
-      ...parsed.value,
-      ipHash: null
-    });
-    const entries = await store.board({
-      daily: entry.daily,
-      seed: entry.seed,
-      limit: 10
-    });
-    res.status(201).json({ rank, id: entry.id, entries });
-  });
-}
-
-function parseBody(value) {
-  if (typeof value === 'string') return JSON.parse(value);
-  if (value && typeof value === 'object' && !Array.isArray(value)) return value;
-  return value ?? {};
-}
-
-function clampLimit(raw) {
-  const n = Number.parseInt(String(raw ?? '10'), 10);
-  if (!Number.isFinite(n)) return 10;
-  return Math.max(1, Math.min(MAX_LIMIT, n));
-}
-
-function splitEnv(value) {
-  return (value || '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
 }
 
 function methodNotAllowed(res, allow) {
@@ -104,11 +41,23 @@ function methodNotAllowed(res, allow) {
   return res.status(405).json({ error: 'method not allowed' });
 }
 
-async function run(res, action) {
+async function proxy(req, res, path, init = { method: 'GET' }) {
   try {
-    await action();
+    const response = await fetch(`${EDGE_BASE}${path}`, init);
+    const text = await response.text();
+
+    res.status(response.status);
+    res.setHeader('Content-Type', response.headers.get('content-type') || 'application/json; charset=utf-8');
+
+    if (!text) return res.end();
+
+    try {
+      return res.json(JSON.parse(text));
+    } catch {
+      return res.send(text);
+    }
   } catch (error) {
-    console.error('[deploy-rush] API error:', error instanceof Error ? error.message : error);
-    if (!res.headersSent) res.status(500).json({ error: 'internal error' });
+    console.error('[deploy-rush] Supabase proxy error:', error instanceof Error ? error.message : error);
+    return res.status(502).json({ error: 'backend unavailable' });
   }
 }
