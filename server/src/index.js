@@ -1,24 +1,9 @@
 /**
- * Deploy Rush leaderboard API (hardened).
+ * Deploy Rush leaderboard API (Express development/server runtime).
  *
- * Endpoints:
- *   GET  /api/health
- *   GET  /api/leaderboard/global?limit=10
- *   GET  /api/leaderboard/daily?seed=YYYYMMDD&limit=10
- *   POST /api/scores            { name, score, duration, title, badges, difficulty, daily, seed }
- *
- * Hardening: helmet security headers, CORS allowlist, per-IP rate limiting,
- * optional write auth (SUBMIT_TOKEN), anti-cheat score validation and handle
- * moderation. Storage is SQLite (better-sqlite3) with a JSON fallback.
- *
- * Configuration (env):
- *   PORT              default 8787
- *   ALLOWED_ORIGINS   comma list; empty = allow all (dev)
- *   SUBMIT_TOKEN      if set, POST /api/scores requires header x-api-key
- *   EXTRA_BLOCKLIST   comma list of extra banned handle substrings
- *   IP_HASH_SALT      salt for hashing IPs at rest (default: random per boot)
- *   TRUST_PROXY       express 'trust proxy' value (default 'loopback')
- *   STORE             'sqlite' (default) or 'json'
+ * Production on Vercel uses the lightweight handlers in server/src/vercelApi.js
+ * through /api/*.js. This Express server remains useful for Docker and local
+ * development and can use the same Supabase store.
  */
 import crypto from 'node:crypto';
 import cors from 'cors';
@@ -38,8 +23,6 @@ const ALLOWED_ORIGINS = splitEnv(process.env.ALLOWED_ORIGINS);
 const store = await createStore();
 const app = express();
 
-// Behind the Vite dev proxy / a reverse proxy, trust the first hop so rate
-// limiting sees the real client IP.
 app.set('trust proxy', process.env.TRUST_PROXY ?? 'loopback');
 app.disable('x-powered-by');
 
@@ -63,40 +46,40 @@ const submitLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
-app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, store: store.kind, entries: store.count() });
-});
+app.get('/api/health', asyncRoute(async (_req, res) => {
+  res.json({ ok: true, store: store.kind, entries: await store.count() });
+}));
 
-app.get('/api/leaderboard/global', (req, res) => {
+app.get('/api/leaderboard/global', asyncRoute(async (req, res) => {
   const limit = clampLimit(req.query.limit);
-  res.json({ mode: 'global', entries: publicBoard(store.board({ daily: false, limit })) });
-});
+  const entries = await store.board({ daily: false, limit });
+  res.json({ mode: 'global', entries: publicBoard(entries) });
+}));
 
-app.get('/api/leaderboard/daily', (req, res) => {
+app.get('/api/leaderboard/daily', asyncRoute(async (req, res) => {
   const limit = clampLimit(req.query.limit);
   const seed = Number.parseInt(String(req.query.seed ?? ''), 10);
   if (!Number.isInteger(seed)) {
     return res.status(400).json({ error: 'seed (YYYYMMDD integer) is required' });
   }
-  res.json({ mode: 'daily', seed, entries: publicBoard(store.board({ daily: true, seed, limit })) });
-});
+  const entries = await store.board({ daily: true, seed, limit });
+  res.json({ mode: 'daily', seed, entries: publicBoard(entries) });
+}));
 
-app.post('/api/scores', submitLimiter, requireSubmitAuth, (req, res) => {
+app.post('/api/scores', submitLimiter, requireSubmitAuth, asyncRoute(async (req, res) => {
   const parsed = validateSubmission(req.body, { blocklist: EXTRA_BLOCKLIST });
   if (!parsed.ok) {
     return res.status(parsed.status).json({ error: parsed.error });
   }
-  const ipHash = hashIp(req.ip);
-  const { entry, rank } = store.add({ ...parsed.value, ipHash });
-  const board = store.board({ daily: entry.daily, seed: entry.seed, limit: 10 });
-  res.status(201).json({ rank, id: entry.id, entries: publicBoard(board) });
-});
 
-// Unknown API routes.
+  const ipHash = hashIp(req.ip);
+  const { entry, rank } = await store.add({ ...parsed.value, ipHash });
+  const board = await store.board({ daily: entry.daily, seed: entry.seed, limit: 10 });
+  res.status(201).json({ rank, id: entry.id, entries: publicBoard(board) });
+}));
+
 app.use('/api', (_req, res) => res.status(404).json({ error: 'not found' }));
 
-// Central error handler (malformed JSON, oversized payloads, etc.).
-// eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
   if (err?.type === 'entity.too.large') {
     return res.status(413).json({ error: 'payload too large' });
@@ -108,20 +91,21 @@ app.use((err, _req, res, _next) => {
     return res.status(403).json({ error: 'origin not allowed' });
   }
   console.error('[deploy-rush] unhandled error:', err?.message);
-  res.status(500).json({ error: 'internal error' });
+  return res.status(500).json({ error: 'internal error' });
 });
 
 app.listen(PORT, () => {
   console.log(`[deploy-rush] leaderboard API on http://localhost:${PORT}`);
+  console.log(`[deploy-rush] store: ${store.kind}`);
   console.log(`[deploy-rush] auth: ${SUBMIT_TOKEN ? 'required (x-api-key)' : 'open'}`);
   console.log(`[deploy-rush] CORS: ${ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS.join(', ') : 'all origins'}`);
 });
 
-// ---- helpers --------------------------------------------------------------
+function asyncRoute(handler) {
+  return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
+}
 
 function corsOrigin(origin, callback) {
-  // Allow non-browser clients (no Origin header) and, when no allowlist is
-  // configured, any origin (development default).
   if (!origin || ALLOWED_ORIGINS.length === 0) return callback(null, true);
   if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
   return callback(new Error('origin not allowed'));
@@ -143,7 +127,6 @@ function hashIp(ip) {
   return crypto.createHash('sha256').update(`${ip}:${IP_HASH_SALT}`).digest('hex').slice(0, 16);
 }
 
-/** Strip internal fields (e.g. ip_hash) before returning to clients. */
 function publicBoard(entries) {
   return entries.map(({ id, name, score, duration, title, badges, difficulty, daily, seed, date }) => ({
     id,
