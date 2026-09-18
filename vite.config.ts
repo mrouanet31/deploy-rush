@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite';
 
 const API_TARGET = process.env.VITE_API_TARGET ?? 'http://localhost:8787';
+const BASE_PATH = process.env.VITE_BASE_PATH ?? '/deploy-rush/';
 
 export default defineConfig({
-  base: '/deploy-rush/',
+  base: BASE_PATH,
 
   server: {
     port: 5173,
