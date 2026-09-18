@@ -18,6 +18,7 @@ export default defineConfig({
   },
 
   build: {
+    outDir: 'dist/deploy-rush',
     target: 'es2020',
     sourcemap: true
   }
