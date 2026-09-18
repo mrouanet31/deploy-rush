@@ -53,7 +53,8 @@ Deno.serve(async (req: Request) => {
 
   try {
     const url = new URL(req.url);
-    const path = url.pathname.replace(/^\/functions\/v1\/deploy-rush-api/, "") || "/";
+    const path =
+      url.pathname.replace(/^\/(?:functions\/v1\/)?deploy-rush-api/, "") || "/";
 
     if (req.method === "GET" && path === "/health") {
       const { count, error } = await supabase
