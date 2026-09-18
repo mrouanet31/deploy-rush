@@ -1,12 +1,21 @@
 /**
- * Store factory — prefers the SQLite backend, falling back to the JSON
- * store if the native module can't be loaded (keeps the server runnable
- * everywhere). Set STORE=json to force the file store.
+ * Store factory.
+ *
+ * - Uses Supabase when explicitly requested or when Supabase configuration is
+ *   present.
+ * - Otherwise keeps the original SQLite -> JSON fallback for local/offline
+ *   development.
  */
 import { Store as JsonStore } from './store.js';
+import { hasSupabaseConfig, SupabaseStore } from './supabaseStore.js';
 
 export async function createStore() {
   const forced = (process.env.STORE ?? '').toLowerCase();
+
+  if (forced === 'supabase' || (!forced && hasSupabaseConfig())) {
+    console.log('[deploy-rush] store: supabase');
+    return new SupabaseStore();
+  }
 
   if (forced === 'json') {
     return new JsonStore();
