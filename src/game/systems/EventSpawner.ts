@@ -7,8 +7,9 @@ import Phaser from 'phaser';
 import { LANES, Layout } from '../constants';
 import { ALL_EVENT_TYPES, EVENT_DEFINITIONS } from '../data/eventDefinitions';
 import { PipelineEvent } from '../entities/PipelineEvent';
+import { requiredSequenceFor } from './eventSequence';
 import type { DifficultySystem } from './DifficultySystem';
-import type { LaneId, PipelineEventDefinition, PipelineEventType, PlayerAction } from '../types';
+import type { LaneId, PipelineEventType, PlayerAction } from '../types';
 
 export class EventSpawner {
   private timeToNext = 0.8;
@@ -59,7 +60,7 @@ export class EventSpawner {
       def,
       laneIndex,
       Layout.spawnX,
-      this.sequenceFor(def),
+      requiredSequenceFor(def),
       this.actionKeys,
       this.createEventRng(type, laneIndex)
     );
@@ -86,7 +87,7 @@ export class EventSpawner {
       def,
       lane,
       Layout.spawnX + offsetX,
-      def.sequence,
+      requiredSequenceFor(def),
       this.actionKeys,
       this.createEventRng(type, lane)
     );
@@ -95,13 +96,6 @@ export class EventSpawner {
   private createEventRng(type: PipelineEventType, laneIndex: number): Phaser.Math.RandomDataGenerator {
     const seed = `${type}:${laneIndex}:${this.rng.between(1, 2147483646)}`;
     return new Phaser.Math.RandomDataGenerator([seed]);
-  }
-
-  private sequenceFor(def: PipelineEventDefinition): PlayerAction[] {
-    if (def.sequence.length <= 1 || def.powerUp || def.mega) return def.sequence;
-    return this.rng.frac() < this.difficulty.sequenceChance()
-      ? def.sequence
-      : [def.sequence[0]];
   }
 
   private pickType(): PipelineEventType {

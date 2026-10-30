@@ -135,8 +135,6 @@ export interface DifficultyProfile {
   maxSpeed: number;
   /** Seconds to ramp from base to max difficulty. */
   rampSeconds: number;
-  /** Chance [0..1] an event requires a multi-step sequence at max difficulty. */
-  sequenceChanceAtMax: number;
   /** Default match duration in seconds. */
   matchDuration: number;
 }

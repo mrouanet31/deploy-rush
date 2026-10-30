@@ -28,14 +28,12 @@ describe('DifficultySystem', () => {
     expect(difficulty.spawnInterval(100)).toBeCloseTo(0.525);
   });
 
-  it('exposes sequence and lane-drift chances from ramp progress', () => {
+  it('ramps lane-drift chance over time', () => {
     const difficulty = new DifficultySystem(DIFFICULTY_PROFILES.conference);
 
-    expect(difficulty.sequenceChance()).toBe(0);
     expect(difficulty.laneDriftChance()).toBe(0);
 
     difficulty.update(100);
-    expect(difficulty.sequenceChance()).toBe(0.5);
     expect(difficulty.laneDriftChance()).toBe(0.35);
   });
 });

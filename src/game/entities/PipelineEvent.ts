@@ -42,6 +42,7 @@ export class PipelineEvent {
   private readonly bg: Phaser.GameObjects.Rectangle;
   private readonly hintText: Phaser.GameObjects.Text;
   private readonly targetFrame: Phaser.GameObjects.Rectangle;
+  private readonly readyBadge: Phaser.GameObjects.Container;
   private readonly progressPips: Phaser.GameObjects.Rectangle[] = [];
   private readonly duelTargetMarkers: Phaser.GameObjects.GameObject[] = [];
   private readonly cardW: number;
@@ -112,12 +113,26 @@ export class PipelineEvent {
       })
       .setOrigin(0.5, 0);
 
+    const readyBg = scene.add
+      .rectangle(w / 2 - 25, -h / 2 + 12, 42, 16, Colors.panel)
+      .setStrokeStyle(1, def.color, 0.95);
+    const readyText = scene.add
+      .text(w / 2 - 25, -h / 2 + 12, 'READY', {
+        fontFamily: Typefaces.mono,
+        fontSize: '8px',
+        color: CssColors.white,
+        fontStyle: 'bold'
+      })
+      .setOrigin(0.5);
+    this.readyBadge = scene.add.container(0, 0, [readyBg, readyText]).setVisible(false);
+
     const children: Phaser.GameObjects.GameObject[] = [
       this.targetFrame,
       this.bg,
       accent,
       icon,
       title,
+      this.readyBadge,
       this.hintText
     ];
 
@@ -197,10 +212,12 @@ export class PipelineEvent {
     this.hintText.setText(this.buildHint());
   }
 
-  setTargeted(value: boolean): void {
+  setTargeted(value: boolean, showReadyBadge = true): void {
     if (this.targeted === value) return;
     this.targeted = value;
     this.targetFrame.setVisible(value);
+    this.targetFrame.setFillStyle(this.def.color, value ? 0.1 : 0);
+    this.readyBadge.setVisible(value && showReadyBadge);
     this.hintText.setColor(value ? CssColors.white : colorToCss(this.def.color));
     if (value) {
       this.scene.tweens.add({
@@ -218,7 +235,7 @@ export class PipelineEvent {
     if (signature === this.duelTargetSignature) return;
     this.duelTargetSignature = signature;
     this.clearDuelTargetMarkers();
-    this.setTargeted(targeters.length > 0);
+    this.setTargeted(targeters.length > 0, false);
 
     if (targeters.length === 0) {
       this.targetFrame.setStrokeStyle(3, Colors.white, 0.95);

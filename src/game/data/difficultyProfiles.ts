@@ -13,7 +13,6 @@ export const DIFFICULTY_PROFILES: Record<DifficultyId, DifficultyProfile> = {
     baseSpeed: 115,
     maxSpeed: 155,
     rampSeconds: 60,
-    sequenceChanceAtMax: 0,
     matchDuration: 60
   },
   normal: {
@@ -24,7 +23,6 @@ export const DIFFICULTY_PROFILES: Record<DifficultyId, DifficultyProfile> = {
     baseSpeed: 130,
     maxSpeed: 240,
     rampSeconds: 150,
-    sequenceChanceAtMax: 0.25,
     matchDuration: 150
   },
   hard: {
@@ -35,7 +33,6 @@ export const DIFFICULTY_PROFILES: Record<DifficultyId, DifficultyProfile> = {
     baseSpeed: 160,
     maxSpeed: 300,
     rampSeconds: 120,
-    sequenceChanceAtMax: 0.4,
     matchDuration: 180
   },
   conference: {
@@ -46,7 +43,6 @@ export const DIFFICULTY_PROFILES: Record<DifficultyId, DifficultyProfile> = {
     baseSpeed: 180,
     maxSpeed: 340,
     rampSeconds: 100,
-    sequenceChanceAtMax: 0.5,
     matchDuration: 210
   }
 };

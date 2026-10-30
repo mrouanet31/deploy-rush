@@ -178,7 +178,7 @@ solo play uses keyboard labels.
 | Training Shift | 1:00 | Guided scripted run for learning movement and hotkeys. |
 | Local Duel | 2:00 | Same-screen 1v1. P1 uses pad 1, P2 uses pad 2. |
 | Normal | 2:30 | Relaxed pacing for learning the pipeline. |
-| Hard | 3:00 | Faster events and more sequences. |
+| Hard | 3:00 | Faster events and tighter reaction windows. |
 | Conference | 3:30 | Punchy booth mode and the default score run. |
 | DevFest Challenge | 3:30 | Conference rules with today's deterministic event seed. |
 

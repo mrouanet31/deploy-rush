@@ -1,6 +1,6 @@
 /**
  * DifficultySystem — turns elapsed time (and tech debt) into live pacing
- * values: spawn interval, event speed, sequence probability.
+ * values: spawn interval, event speed and lane-drift probability.
  */
 import type { DifficultyProfile } from '../types';
 import { Gauges } from '../constants';
@@ -36,11 +36,6 @@ export class DifficultySystem {
   eventSpeed(): number {
     const p = this.progress;
     return this.profile.baseSpeed + (this.profile.maxSpeed - this.profile.baseSpeed) * p;
-  }
-
-  /** Probability the next multi-capable event uses its full sequence. */
-  sequenceChance(): number {
-    return this.profile.sequenceChanceAtMax * this.progress;
   }
 
   /** Chance an event drifts to a neighbouring lane (rises with difficulty). */
