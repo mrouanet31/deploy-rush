@@ -29,6 +29,7 @@ import { RunRules } from '../systems/RunRules';
 import { ScoreSystem } from '../systems/ScoreSystem';
 import { SettingsService } from '../systems/SettingsService';
 import { SoundManager } from '../systems/SoundManager';
+import { Typefaces } from '../typography';
 import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
 import type { PlayerAction } from '../types';
 
@@ -192,7 +193,7 @@ export class VersusScene extends Phaser.Scene {
         .setOrigin(0, 0);
       this.add
         .text(16, cy, lane, {
-          fontFamily: 'Consolas, monospace',
+          fontFamily: Typefaces.body,
           fontSize: '18px',
           color: colorToCss(LaneColors[lane]),
           fontStyle: 'bold'
@@ -234,7 +235,7 @@ export class VersusScene extends Phaser.Scene {
     this.add.text(textX, 16, label, bodyStyle(13, colorCss)).setOrigin(0, 0);
     const scoreText = this.add
       .text(scoreX, 30, '0', {
-        fontFamily: 'Consolas, monospace',
+      fontFamily: Typefaces.mono,
         fontSize: '30px',
         color: CssColors.white,
         fontStyle: 'bold'
@@ -264,7 +265,7 @@ export class VersusScene extends Phaser.Scene {
       .setOrigin(0.5, 0);
     this.timerText = this.add
       .text(GAME_WIDTH / 2, 30, '2:00', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '34px',
         color: CssColors.cyan,
         fontStyle: 'bold'
@@ -467,7 +468,7 @@ export class VersusScene extends Phaser.Scene {
   private showBanner(text: string, color: string): void {
     const banner = this.add
       .text(GAME_WIDTH / 2, Layout.hudHeight + 20, text, {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.display,
         fontSize: '22px',
         color,
         fontStyle: 'bold',
@@ -603,7 +604,7 @@ export class VersusScene extends Phaser.Scene {
       .setOrigin(1, 0);
     const score = this.add
       .text(x, y - 112, String(s.score), {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '46px',
         color: CssColors.white,
         fontStyle: 'bold'

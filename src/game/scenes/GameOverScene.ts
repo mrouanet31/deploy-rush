@@ -12,7 +12,8 @@ import { InputDeviceService } from '../systems/InputDeviceService';
 import { LeaderboardApi } from '../systems/LeaderboardApi';
 import { LeaderboardService } from '../systems/LeaderboardService';
 import { SoundManager } from '../systems/SoundManager';
-import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
+import { Typefaces } from '../typography';
+import { bodyStyle, createBackdrop, monoStyle, panel, titleStyle } from '../ui';
 import type { GameResult, LeaderboardScope, RunBadge, RunModifierId } from '../types';
 
 interface GameOverData {
@@ -92,14 +93,14 @@ export class GameOverScene extends Phaser.Scene {
     // Final score big.
     this.add
       .text(GAME_WIDTH / 2, 138, `${breakdown.total}`, {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '58px',
         color: CssColors.green,
         fontStyle: 'bold'
       })
       .setOrigin(0.5);
     this.add
-      .text(GAME_WIDTH / 2, 178, this.scoreMetaLabel(), bodyStyle(15, CssColors.textDim))
+      .text(GAME_WIDTH / 2, 178, this.scoreMetaLabel(), monoStyle(13, CssColors.textDim))
       .setOrigin(0.5);
 
     this.renderBadges(GAME_WIDTH / 2, 202, breakdown.badges);
@@ -139,12 +140,12 @@ export class GameOverScene extends Phaser.Scene {
       const ly = y + 42 + i * 20;
       this.add.text(x + 16, ly, label, bodyStyle(13, CssColors.text)).setOrigin(0, 0);
       this.add
-        .text(x + w - 16, ly, `${val >= 0 ? '+' : ''}${val}`, bodyStyle(13, val > 0 ? CssColors.green : CssColors.textDim))
+        .text(x + w - 16, ly, `${val >= 0 ? '+' : ''}${val}`, monoStyle(13, val > 0 ? CssColors.green : CssColors.textDim))
         .setOrigin(1, 0);
     });
     const ty = y + h - 32;
     this.add.text(x + 16, ty, 'TOTAL', bodyStyle(15, CssColors.white)).setOrigin(0, 0);
-    this.add.text(x + w - 16, ty, `${b.total}`, bodyStyle(15, CssColors.green)).setOrigin(1, 0);
+    this.add.text(x + w - 16, ty, `${b.total}`, monoStyle(15, CssColors.green)).setOrigin(1, 0);
   }
 
   private renderBadges(centerX: number, y: number, badges: RunBadge[]): void {
@@ -190,7 +191,7 @@ export class GameOverScene extends Phaser.Scene {
     rows.forEach(([label, val], i) => {
       const ly = y + 40 + i * 18;
       this.add.text(x + 16, ly, label, bodyStyle(13, CssColors.text)).setOrigin(0, 0);
-      this.add.text(x + w - 16, ly, val, bodyStyle(13, CssColors.cyan)).setOrigin(1, 0);
+      this.add.text(x + w - 16, ly, val, monoStyle(12, CssColors.cyan)).setOrigin(1, 0);
     });
   }
 
@@ -229,7 +230,7 @@ export class GameOverScene extends Phaser.Scene {
     panel(this, GAME_WIDTH / 2, y + 6, 360, 42);
     this.nameText = this.add
       .text(GAME_WIDTH / 2, y + 6, '', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '26px',
         color: CssColors.white,
         fontStyle: 'bold'
@@ -261,6 +262,7 @@ export class GameOverScene extends Phaser.Scene {
       const text = this.add
         .text(x, y, key, {
           ...bodyStyle(key.length > 1 ? 10 : 13, CssColors.text),
+          fontFamily: Typefaces.mono,
           fontStyle: 'bold'
         })
         .setOrigin(0.5);
@@ -273,7 +275,7 @@ export class GameOverScene extends Phaser.Scene {
     panel(this, centerX, 618, 360, 34);
     this.nameText = this.add
       .text(centerX, 618, '', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '26px',
         color: CssColors.white,
         fontStyle: 'bold'

@@ -4,6 +4,7 @@
  */
 import Phaser from 'phaser';
 import { Colors, CssColors, GAME_HEIGHT, GAME_WIDTH } from './constants';
+import { Typefaces } from './typography';
 
 /** Draws a dark backdrop with a subtle animated pipeline grid. */
 export function createBackdrop(scene: Phaser.Scene): void {
@@ -36,7 +37,7 @@ export function createBackdrop(scene: Phaser.Scene): void {
 
 export function titleStyle(size = 72): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Consolas, "Courier New", monospace',
+    fontFamily: Typefaces.display,
     fontSize: `${size}px`,
     color: CssColors.white,
     fontStyle: 'bold'
@@ -45,7 +46,15 @@ export function titleStyle(size = 72): Phaser.Types.GameObjects.Text.TextStyle {
 
 export function bodyStyle(size = 20, color: string = CssColors.text): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Consolas, monospace',
+    fontFamily: Typefaces.body,
+    fontSize: `${size}px`,
+    color
+  };
+}
+
+export function monoStyle(size = 16, color: string = CssColors.text): Phaser.Types.GameObjects.Text.TextStyle {
+  return {
+    fontFamily: Typefaces.mono,
     fontSize: `${size}px`,
     color
   };
@@ -61,7 +70,7 @@ export function pulseHint(
 ): Phaser.GameObjects.Text {
   const label = scene.add
     .text(x, y, text, {
-      fontFamily: 'Consolas, monospace',
+      fontFamily: Typefaces.body,
       fontSize: '22px',
       color,
       fontStyle: 'bold'

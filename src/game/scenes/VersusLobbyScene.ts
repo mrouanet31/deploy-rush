@@ -7,6 +7,7 @@ import { Colors, CssColors, GAME_HEIGHT, GAME_WIDTH, SceneKeys } from '../consta
 import { GamepadController } from '../systems/GamepadController';
 import { InputDeviceService } from '../systems/InputDeviceService';
 import { SoundManager } from '../systems/SoundManager';
+import { Typefaces } from '../typography';
 import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
 import type { NavIntent } from '../systems/InputController';
 
@@ -146,7 +147,7 @@ export class VersusLobbyScene extends Phaser.Scene {
       .setStrokeStyle(4, choice.color);
     const avatarFace = this.add
       .text(x, 348, '\u2B22', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '42px',
         color: colorToCss(choice.color),
         fontStyle: 'bold'

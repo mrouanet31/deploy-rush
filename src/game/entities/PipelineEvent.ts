@@ -14,6 +14,7 @@ import {
 } from '../constants';
 import { PipelineEventState } from '../systems/PipelineEventState';
 import type { PipelineEventDefinition, PlayerAction } from '../types';
+import { Typefaces } from '../typography';
 
 const CARD_WIDTH = 128;
 const CARD_HEIGHT = 84;
@@ -86,7 +87,7 @@ export class PipelineEvent {
 
     const icon = scene.add
       .text(-w / 2 + 22, -h / 2 + 12, def.icon, {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: def.mega ? '30px' : '22px',
         color: colorToCss(def.color)
       })
@@ -94,7 +95,7 @@ export class PipelineEvent {
 
     const title = scene.add
       .text(-w / 2 + 20, -8, def.label, {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.body,
         fontSize: def.mega ? '15px' : '13px',
         color: CssColors.text,
         fontStyle: 'bold',
@@ -104,7 +105,7 @@ export class PipelineEvent {
 
     this.hintText = scene.add
       .text(0, h / 2 - 18, this.buildHint(), {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '14px',
         color: colorToCss(def.color),
         fontStyle: 'bold'
@@ -239,7 +240,7 @@ export class PipelineEvent {
         .setStrokeStyle(1, Colors.bg, 0.75);
       const badgeText = this.scene.add
         .text(badgeX, badgeY, marker.id, {
-          fontFamily: 'Consolas, monospace',
+          fontFamily: Typefaces.mono,
           fontSize: '12px',
           color: CssColors.white,
           fontStyle: 'bold'
@@ -255,7 +256,7 @@ export class PipelineEvent {
         .setStrokeStyle(1, Colors.white, 0.45);
       const label = this.scene.add
         .text(0, this.cardH / 2 + 14, 'CONTESTED', {
-          fontFamily: 'Consolas, monospace',
+          fontFamily: Typefaces.mono,
           fontSize: '10px',
           color: CssColors.white,
           fontStyle: 'bold'

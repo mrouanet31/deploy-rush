@@ -17,7 +17,7 @@ import { LeaderboardApi } from '../systems/LeaderboardApi';
 import { LeaderboardService } from '../systems/LeaderboardService';
 import { GamepadController } from '../systems/GamepadController';
 import { SoundManager } from '../systems/SoundManager';
-import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
+import { bodyStyle, createBackdrop, monoStyle, panel, titleStyle } from '../ui';
 import type { DifficultyId, LeaderboardEntry, LeaderboardScope, RunBadge, RunModifierId } from '../types';
 
 interface LeaderboardData {
@@ -200,11 +200,11 @@ export class LeaderboardScene extends Phaser.Scene {
 
   private renderHeader(): void {
     const { cols } = this.geometry();
-    this.add.text(cols.rank, 112, '#', bodyStyle(15, CssColors.textDim)).setOrigin(0, 0.5);
+    this.add.text(cols.rank, 112, '#', monoStyle(14, CssColors.textDim)).setOrigin(0, 0.5);
     this.add.text(cols.name, 112, 'HANDLE', bodyStyle(15, CssColors.textDim)).setOrigin(0, 0.5);
     this.add.text(cols.title, 112, 'TITLE / BADGES', bodyStyle(15, CssColors.textDim)).setOrigin(0, 0.5);
-    this.add.text(cols.score, 112, 'SCORE', bodyStyle(15, CssColors.textDim)).setOrigin(0, 0.5);
-    this.add.text(cols.date, 112, 'DATE', bodyStyle(15, CssColors.textDim)).setOrigin(1, 0.5);
+    this.add.text(cols.score, 112, 'SCORE', monoStyle(14, CssColors.textDim)).setOrigin(0, 0.5);
+    this.add.text(cols.date, 112, 'DATE', monoStyle(14, CssColors.textDim)).setOrigin(1, 0.5);
   }
 
   private geometry() {
@@ -260,13 +260,13 @@ export class LeaderboardScene extends Phaser.Scene {
       const medal = i < 3 ? ['\u{1F947}', '\u{1F948}', '\u{1F949}'][i] : `${i + 1}`;
       const nameColor = isHighlight ? CssColors.green : CssColors.white;
 
-      objects.push(this.add.text(cols.rank, y, medal, bodyStyle(18, CssColors.yellow)).setOrigin(0, 0.5));
+      objects.push(this.add.text(cols.rank, y, medal, monoStyle(17, CssColors.yellow)).setOrigin(0, 0.5));
       objects.push(this.add.text(cols.name, y, entry.name, bodyStyle(18, nameColor)).setOrigin(0, 0.5));
       objects.push(this.add.text(cols.title, y - 9, entry.title, bodyStyle(14, CssColors.purple)).setOrigin(0, 0.5));
       this.renderBadgePills(objects, entry.badges ?? [], cols.title + 2, y + 8, cols.score - cols.title - 34);
-      objects.push(this.add.text(cols.score, y, `${entry.score}`, bodyStyle(18, CssColors.cyan)).setOrigin(0, 0.5));
+      objects.push(this.add.text(cols.score, y, `${entry.score}`, monoStyle(17, CssColors.cyan)).setOrigin(0, 0.5));
       objects.push(
-        this.add.text(cols.date, y, this.formatMeta(entry), bodyStyle(13, CssColors.textDim)).setOrigin(1, 0.5)
+        this.add.text(cols.date, y, this.formatMeta(entry), monoStyle(11, CssColors.textDim)).setOrigin(1, 0.5)
       );
     });
 

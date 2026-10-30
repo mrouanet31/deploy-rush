@@ -6,6 +6,7 @@ import Phaser from 'phaser';
 import { CssColors, GAME_HEIGHT, GAME_WIDTH, SceneKeys } from '../constants';
 import { SettingsService } from '../systems/SettingsService';
 import { SoundManager } from '../systems/SoundManager';
+import { Typefaces } from '../typography';
 import { createBackdrop, titleStyle } from '../ui';
 
 export class BootScene extends Phaser.Scene {
@@ -27,7 +28,7 @@ export class BootScene extends Phaser.Scene {
       .setOrigin(0.5);
     this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 40, 'booting pipeline...', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '18px',
         color: CssColors.textDim
       })

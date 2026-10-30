@@ -11,6 +11,7 @@ import {
   Layout
 } from '../constants';
 import type { GameState } from '../types';
+import { Typefaces } from '../typography';
 
 interface GaugeBar {
   label: Phaser.GameObjects.Text;
@@ -58,7 +59,7 @@ export class HudSystem {
       .setDepth(51);
     this.scoreText = s.add
       .text(24, 32, '0', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '36px',
         color: CssColors.white,
         fontStyle: 'bold'
@@ -68,7 +69,7 @@ export class HudSystem {
     // Combo (below the score).
     this.comboText = s.add
       .text(24, 76, '', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '16px',
         color: CssColors.purple,
         fontStyle: 'bold'
@@ -83,7 +84,7 @@ export class HudSystem {
       .setDepth(51);
     this.timerText = s.add
       .text(timerX, 30, '3:00', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '36px',
         color: CssColors.cyan,
         fontStyle: 'bold'
@@ -94,7 +95,7 @@ export class HudSystem {
     // Difficulty tag (top-right corner, above the gauges).
     s.add
       .text(GAME_WIDTH - 24, 10, difficultyLabel.toUpperCase(), {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '15px',
         color: CssColors.textDim,
         fontStyle: 'bold'
@@ -136,7 +137,7 @@ export class HudSystem {
       .setDepth(52);
     const value = s.add
       .text(x + width, y - 18, '100', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '13px',
         color: CssColors.textDim
       })
@@ -199,7 +200,7 @@ export class HudSystem {
 
 function labelStyle(): Phaser.Types.GameObjects.Text.TextStyle {
   return {
-    fontFamily: 'Consolas, monospace',
+    fontFamily: Typefaces.mono,
     fontSize: '13px',
     color: CssColors.textDim,
     fontStyle: 'bold'

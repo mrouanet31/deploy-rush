@@ -9,6 +9,7 @@ import {
   Layout,
   laneCenterY
 } from '../constants';
+import { Typefaces } from '../typography';
 
 interface PlayerOptions {
   x?: number;
@@ -45,7 +46,7 @@ export class Player {
 
     const face = scene.add
       .text(0, 0, '\u2B22', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '30px',
         color: colorToCss(color),
         fontStyle: 'bold'
@@ -54,7 +55,7 @@ export class Player {
 
     const tag = scene.add
       .text(0, 34, 'YOU', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.mono,
         fontSize: '12px',
         color: '#8a97c2',
         fontStyle: 'bold'

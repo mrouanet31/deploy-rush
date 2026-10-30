@@ -3,6 +3,7 @@
  */
 import Phaser from 'phaser';
 import { CssColors } from '../constants';
+import { Typefaces } from '../typography';
 
 export class FloatingText {
   static spawn(
@@ -15,7 +16,7 @@ export class FloatingText {
   ): void {
     const label = scene.add
       .text(x, y, text, {
-        fontFamily: 'Consolas, "Courier New", monospace',
+        fontFamily: Typefaces.mono,
         fontSize: `${fontSize}px`,
         color,
         fontStyle: 'bold',

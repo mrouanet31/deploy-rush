@@ -38,6 +38,7 @@ import { RunRules } from '../systems/RunRules';
 import { ScoreSystem } from '../systems/ScoreSystem';
 import { SettingsService } from '../systems/SettingsService';
 import { SoundManager } from '../systems/SoundManager';
+import { Typefaces } from '../typography';
 import { createBackdrop } from '../ui';
 import type {
   DifficultyId,
@@ -240,7 +241,7 @@ export class GameScene extends Phaser.Scene {
     // Small "GO" flourish at start.
     const go = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'SHIP IT!', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.display,
         fontSize: '64px',
         color: CssColors.green,
         fontStyle: 'bold'
@@ -297,7 +298,7 @@ export class GameScene extends Phaser.Scene {
         .setOrigin(0, 0);
       this.add
         .text(16, cy, lane, {
-          fontFamily: 'Consolas, monospace',
+          fontFamily: Typefaces.body,
           fontSize: '18px',
           color: '#' + LaneColors[lane].toString(16).padStart(6, '0'),
           fontStyle: 'bold'
@@ -539,7 +540,7 @@ export class GameScene extends Phaser.Scene {
       .setStrokeStyle(2, Colors.cyan, 0.75);
     this.trainingText = this.add
       .text(GAME_WIDTH / 2, y, '', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.body,
         fontSize: '15px',
         color: CssColors.text,
         fontStyle: 'bold',
@@ -706,7 +707,7 @@ export class GameScene extends Phaser.Scene {
   private showBanner(text: string, color: string): void {
     const banner = this.add
       .text(GAME_WIDTH / 2, Layout.hudHeight + 26, text, {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.display,
         fontSize: '22px',
         color,
         fontStyle: 'bold',
@@ -818,7 +819,7 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0, 0);
     const title = this.add
       .text(GAME_WIDTH / 2, 200, 'PAUSED', {
-        fontFamily: 'Consolas, monospace',
+        fontFamily: Typefaces.display,
         fontSize: '64px',
         color: CssColors.cyan,
         fontStyle: 'bold'
@@ -832,7 +833,7 @@ export class GameScene extends Phaser.Scene {
     const texts = lines.map((l, i) =>
       this.add
         .text(GAME_WIDTH / 2, 300 + i * 44, l, {
-          fontFamily: 'Consolas, monospace',
+          fontFamily: Typefaces.mono,
           fontSize: '24px',
           color: CssColors.text
         })

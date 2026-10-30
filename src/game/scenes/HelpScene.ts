@@ -15,7 +15,7 @@ import { GamepadController } from '../systems/GamepadController';
 import { InputDeviceService } from '../systems/InputDeviceService';
 import { SettingsService } from '../systems/SettingsService';
 import { SoundManager } from '../systems/SoundManager';
-import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
+import { bodyStyle, createBackdrop, monoStyle, panel, titleStyle } from '../ui';
 import type { PlayerAction } from '../types';
 
 export class HelpScene extends Phaser.Scene {
@@ -94,9 +94,9 @@ export class HelpScene extends Phaser.Scene {
     ];
     lines.forEach(([key, label, pad], i) => {
       const ly = rowStart + i * rowH;
-      this.add.text(keyX, ly, `[${key}]`, bodyStyle(14, CssColors.cyan)).setOrigin(0, 0);
+      this.add.text(keyX, ly, `[${key}]`, monoStyle(13, CssColors.cyan)).setOrigin(0, 0);
       this.add.text(actionX, ly, label, bodyStyle(14, CssColors.text)).setOrigin(0, 0);
-      this.add.text(padX, ly, `(${pad})`, bodyStyle(14, CssColors.purple)).setOrigin(1, 0);
+      this.add.text(padX, ly, `(${pad})`, monoStyle(13, CssColors.purple)).setOrigin(1, 0);
     });
 
     const oy = rowStart + lines.length * rowH + 18;
@@ -137,7 +137,7 @@ export class HelpScene extends Phaser.Scene {
         ? '/' + def.altFirstActions.map((a) => this.cardActionLabels[a]).join('')
         : '';
       this.add
-        .text(keysX, ly, `${keys}${alt}  +${def.basePoints}`, bodyStyle(13, css))
+        .text(keysX, ly, `${keys}${alt}  +${def.basePoints}`, monoStyle(12, css))
         .setOrigin(1, 0);
     });
 
@@ -153,7 +153,7 @@ export class HelpScene extends Phaser.Scene {
         def.powerUp === 'SLOW' ? 'slows the conveyor' : 'auto-resolves criticals';
       this.add.text(left, ly, def.icon, bodyStyle(15, css)).setOrigin(0, 0);
       this.add.text(left + 24, ly, def.label, bodyStyle(13, CssColors.text)).setOrigin(0, 0);
-      this.add.text(left + 148, ly, '[SPACE] / (A)', bodyStyle(13, css)).setOrigin(0, 0);
+      this.add.text(left + 148, ly, '[SPACE] / (A)', monoStyle(12, css)).setOrigin(0, 0);
       this.add.text(left + 260, ly, effect, bodyStyle(12, CssColors.textDim)).setOrigin(0, 0);
     });
   }

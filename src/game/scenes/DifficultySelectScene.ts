@@ -9,7 +9,7 @@ import { availableModes, availableModifiers, type GameMode } from '../data/gameM
 import { DEFAULT_RUN_MODIFIER, RUN_MODIFIERS } from '../data/runModifiers';
 import { GamepadController } from '../systems/GamepadController';
 import { SoundManager } from '../systems/SoundManager';
-import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
+import { bodyStyle, createBackdrop, monoStyle, panel, titleStyle } from '../ui';
 import type { RunModifierId } from '../types';
 
 const ROW_START_Y = 210;
@@ -59,7 +59,7 @@ export class DifficultySelectScene extends Phaser.Scene {
         .text(ROW_TEXT_LEFT, 8, opt.desc, bodyStyle(13, CssColors.textDim))
         .setOrigin(0, 0);
       const meta = this.add
-        .text(ROW_META_RIGHT, 0, metaText, bodyStyle(20, CssColors.cyan))
+        .text(ROW_META_RIGHT, 0, metaText, monoStyle(18, CssColors.cyan))
         .setOrigin(1, 0.5);
       const container = this.add.container(GAME_WIDTH / 2, y, [bg, label, desc, meta]);
       this.rows.push(container);
