@@ -18,7 +18,7 @@ import { GamepadController } from '../systems/GamepadController';
 import { InputDeviceService } from '../systems/InputDeviceService';
 import { SettingsService } from '../systems/SettingsService';
 import { SoundManager } from '../systems/SoundManager';
-import { bodyStyle, createBackdrop, panel, pulseHint, titleStyle } from '../ui';
+import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
 import type { LeaderboardEntry } from '../types';
 
 const ATTRACT_DELAY_MS = 12000;
@@ -55,8 +55,6 @@ const MENU_ITEMS: MenuItem[] = [
 
 export class MenuScene extends Phaser.Scene {
   private soundMgr!: SoundManager;
-  private soundText!: Phaser.GameObjects.Text;
-  private startHint!: Phaser.GameObjects.Text;
   private attractTimer?: Phaser.Time.TimerEvent;
   private attractGroup?: Phaser.GameObjects.Container;
   private demoCards: DemoCard[] = [];
@@ -65,7 +63,6 @@ export class MenuScene extends Phaser.Scene {
   private demoIdleY = 0;
   private menuRows: MenuRow[] = [];
   private selectedIndex = 0;
-  private gamepadMode = false;
 
   constructor() {
     super(SceneKeys.Menu);
@@ -91,25 +88,13 @@ export class MenuScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     const cx = GAME_WIDTH / 2;
-    this.gamepadMode = InputDeviceService.hasConnectedGamepad(this);
     this.renderMenuRows(cx);
-
-    this.startHint = pulseHint(this, cx, GAME_HEIGHT - 96, this.startPrompt(), CssColors.green);
-
-    this.soundText = this.add
-      .text(GAME_WIDTH - 20, GAME_HEIGHT - 24, this.soundLabel(), bodyStyle(16, CssColors.textDim))
-      .setOrigin(1, 1);
-
-    this.add
-      .text(20, GAME_HEIGHT - 24, 'v1.0 \u00B7 keyboard + gamepad \u00B7 offline', bodyStyle(16, CssColors.textDim))
-      .setOrigin(0, 1);
 
     this.bindKeys();
     this.armAttractTimer();
   }
 
   update(_time: number, delta: number): void {
-    this.refreshInputMode();
     if (!this.attractGroup) return;
     const dt = delta / 1000;
     for (const card of this.demoCards) {
@@ -166,21 +151,10 @@ export class MenuScene extends Phaser.Scene {
       const selected = i === this.selectedIndex;
       row.panel.setStrokeStyle(selected ? 3 : 2, selected ? Colors.green : Colors.panelLight, selected ? 1 : 0.55);
       row.panel.setFillStyle(selected ? Colors.panelLight : Colors.panel, selected ? 0.98 : 0.72);
-      row.labelText.setText(`${selected ? '> ' : ''}${item.label}${selected ? ' <' : ''}`);
+      const label = item.action === 'sound' ? this.soundLabel() : item.label;
+      row.labelText.setText(`${selected ? '> ' : ''}${label}${selected ? ' <' : ''}`);
       row.labelText.setColor(selected ? CssColors.white : CssColors.text);
     });
-  }
-
-  private refreshInputMode(): void {
-    const next = InputDeviceService.hasConnectedGamepad(this);
-    if (next === this.gamepadMode) return;
-    this.gamepadMode = next;
-    this.refreshMenuRows();
-    this.startHint.setText(this.startPrompt());
-  }
-
-  private startPrompt(): string {
-    return this.gamepadMode ? 'D-pad / Stick to Choose · (A) Select' : '\u2191/\u2193 Choose · ENTER Select';
   }
 
   private moveSelection(delta: number): void {
@@ -225,7 +199,7 @@ export class MenuScene extends Phaser.Scene {
     const enabled = this.soundMgr.toggle();
     SettingsService.update({ sound: enabled });
     if (enabled) this.soundMgr.select();
-    this.soundText.setText(this.soundLabel());
+    this.refreshMenuRows();
   }
 
   private armAttractTimer(): void {
@@ -251,30 +225,6 @@ export class MenuScene extends Phaser.Scene {
     this.createAttractScores(objects, LeaderboardService.load().slice(0, 5));
     this.createDemoPipeline(objects);
     this.createChallengePanel(objects);
-
-    const cta = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT - 58, 'PRESS ENTER OR (A) TO TAKE THE NEXT SHIFT', {
-        fontFamily: 'Consolas, monospace',
-        fontSize: '25px',
-        color: CssColors.green,
-        fontStyle: 'bold'
-      })
-      .setOrigin(0.5);
-    objects.push(cta);
-    this.tweens.add({
-      targets: cta,
-      alpha: { from: 1, to: 0.35 },
-      duration: 720,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut'
-    });
-
-    objects.push(
-      this.add
-        .text(GAME_WIDTH / 2, GAME_HEIGHT - 26, 'One run. One leaderboard. Keep prod alive.', bodyStyle(15, CssColors.textDim))
-        .setOrigin(0.5)
-    );
 
     this.attractGroup = this.add.container(0, 0, objects).setDepth(180).setAlpha(0);
     this.tweens.add({
@@ -314,7 +264,7 @@ export class MenuScene extends Phaser.Scene {
 
     const seed = dailySeed();
     const chips: Array<[string, string, string]> = [
-      ['DAILY', `#${seed}`, CssColors.yellow],
+      ['DEVFEST', `#${seed}`, CssColors.yellow],
       ['RUN', '3:30', CssColors.green],
       ['GOAL', 'TOP 10', CssColors.purple]
     ];

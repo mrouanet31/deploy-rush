@@ -314,7 +314,8 @@ export class VersusScene extends Phaser.Scene {
       return;
     }
 
-    const resolved: PlayerAction = action === 'CONTEXT' ? target.nextAction : action;
+    const resolved = RunRules.resolveInput(action, target.nextAction);
+    if (resolved === null) return;
     const previousOwner = this.progressOwners.get(target);
     const progressBefore = target.progress;
     const result = target.applyAction(resolved);

@@ -105,10 +105,6 @@ export class VersusLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT - 30, 'B / ESC back to mode select', bodyStyle(15, CssColors.textDim))
-      .setOrigin(0.5);
-
     this.bindKeys();
     this.bindGamepads();
     this.refresh();

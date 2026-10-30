@@ -12,7 +12,8 @@ services:
     build: ./server
     environment:
       PORT: "8787"
-      STORE: sqlite
+      STORE: "${STORE:-sqlite}"
+      SUPABASE_URL: "${SUPABASE_URL:-}"
       # Trust the nginx hop so rate limiting sees the real client IP.
       TRUST_PROXY: "1"
       # Leave empty to allow all origins; the web talks to /api same-origin.
@@ -53,7 +54,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/index.html"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/index.html"]
       interval: 15s
       timeout: 5s
       retries: 5

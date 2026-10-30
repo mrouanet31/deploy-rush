@@ -6,7 +6,6 @@ import Phaser from 'phaser';
 import {
   Colors,
   CssColors,
-  GAME_HEIGHT,
   GAME_WIDTH,
   KeyboardLayoutLabels,
   KeyboardLayouts,
@@ -17,7 +16,7 @@ import { SettingsService, type Settings } from '../systems/SettingsService';
 import { GamepadController } from '../systems/GamepadController';
 import { InputDeviceService } from '../systems/InputDeviceService';
 import { SoundManager } from '../systems/SoundManager';
-import { bodyStyle, createBackdrop, panel, pulseHint, titleStyle } from '../ui';
+import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
 import type { KeyboardLayout } from '../types';
 
 type ToggleKey = 'sound' | 'music' | 'reducedMotion';
@@ -84,7 +83,6 @@ export class OptionsScene extends Phaser.Scene {
       this.valueTexts.push(value);
     });
 
-    pulseHint(this, GAME_WIDTH / 2, GAME_HEIGHT - 40, 'Press ESC to go back', CssColors.cyan);
     this.refresh();
     this.bindKeys();
     this.bindGamepad();

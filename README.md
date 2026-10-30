@@ -165,7 +165,7 @@ drift toward a neighboring lane. Stay mobile.
 | Rollback | `R` | `LT` | Recover production alerts |
 | Deploy | `D` | `RB` / `RT` | Ship validated work |
 | Block | `B` | `B` | Stop risky/security work |
-| Quick contextual action | `Space` | `A` | Perform the next required step on the aligned card |
+| Bonus / training assist | `Space` | `A` | Collect a power-up; auto-select the next action only in Training Shift |
 
 When at least one gamepad is connected, P1 automatically uses the first
 connected pad and card labels switch to gamepad buttons. Without a gamepad,
@@ -180,10 +180,17 @@ solo play uses keyboard labels.
 | Normal | 2:30 | Relaxed pacing for learning the pipeline. |
 | Hard | 3:00 | Faster events and more sequences. |
 | Conference | 3:30 | Punchy booth mode and the default score run. |
-| Daily Challenge | 3:30 | Conference rules with today's deterministic event seed. |
+| DevFest Challenge | 3:30 | Conference rules with today's deterministic event seed. |
 
-Training, Daily Challenge, and Local Duel use fixed rules. Normal, Hard, and
-Conference can use optional modifiers.
+Training Shift, Local Duel and DevFest Challenge are enabled by default.
+Configure the selection in [src/game/data/gameModes.ts](src/game/data/gameModes.ts):
+set `enabled` for each mode and use its `modifiers` array to choose and order
+the available modifiers. For example, `['classic', 'precisionRun']` exposes
+only those two choices. An empty list falls back to Classic.
+
+Training, DevFest Challenge, and Local Duel retain fixed Classic rules.
+Normal, Hard, and Conference can use the configured modifier subsets.
+Rebuild the frontend after changing this configuration.
 
 ## Run Modifiers
 
@@ -203,8 +210,10 @@ submitted to the online classic leaderboard.
 ## Event Cards
 
 Cards may require one action or a sequence. For multi-step cards, complete the
-steps in order. `Space` / gamepad `A` performs the next required step when you
-are aligned with the card.
+steps in order using the matching action keys. Only in Training Shift does
+`Space` / gamepad `A` perform the next required step on the aligned card.
+In other modes, this button only collects power-ups and has no effect on
+regular tickets.
 
 | Event | Lane | Required action | Notes |
 | --- | --- | --- | --- |

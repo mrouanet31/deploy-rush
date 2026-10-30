@@ -18,6 +18,7 @@ import {
   SceneKeys
 } from '../constants';
 import { DIFFICULTY_PROFILES } from '../data/difficultyProfiles';
+import { runModifier } from '../data/gameModes';
 import {
   DEFAULT_RUN_MODIFIER,
   RUN_MODIFIERS,
@@ -169,9 +170,7 @@ export class GameScene extends Phaser.Scene {
     this.soundMgr = data.sound ?? new SoundManager();
     this.daily = data.daily ?? false;
     this.seed = dailySeed();
-    this.modifierId = this.daily || data.difficulty === 'training'
-      ? DEFAULT_RUN_MODIFIER
-      : data.modifier ?? DEFAULT_RUN_MODIFIER;
+    this.modifierId = runModifier(this.difficultyId, this.daily, data.modifier);
     this.modifier = RUN_MODIFIERS[this.modifierId] ?? RUN_MODIFIERS[DEFAULT_RUN_MODIFIER];
     this.pipelineEvents = [];
     this.paused = false;
@@ -409,8 +408,8 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    // Contextual quick action auto-selects the next expected input.
-    const resolved: PlayerAction = action === 'CONTEXT' ? target.nextAction : action;
+    const resolved = RunRules.resolveInput(action, target.nextAction, this.isTraining());
+    if (resolved === null) return;
     const result = target.applyAction(resolved);
 
     if (result === 'complete') {
@@ -792,7 +791,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private runLabel(baseLabel: string): string {
-    if (this.daily) return `DAILY \u00B7 ${baseLabel}`;
+    if (this.daily) return 'DevFest Challenge';
     if (this.modifier.id === 'classic') return baseLabel;
     return `${baseLabel} \u00B7 ${this.modifier.shortLabel}`;
   }

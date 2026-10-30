@@ -7,7 +7,6 @@ import {
   ActionKeysByLayout,
   Colors,
   CssColors,
-  GAME_HEIGHT,
   GAME_WIDTH,
   SceneKeys
 } from '../constants';
@@ -16,7 +15,7 @@ import { GamepadController } from '../systems/GamepadController';
 import { InputDeviceService } from '../systems/InputDeviceService';
 import { SettingsService } from '../systems/SettingsService';
 import { SoundManager } from '../systems/SoundManager';
-import { bodyStyle, createBackdrop, panel, pulseHint, titleStyle } from '../ui';
+import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
 import type { PlayerAction } from '../types';
 
 export class HelpScene extends Phaser.Scene {
@@ -54,8 +53,6 @@ export class HelpScene extends Phaser.Scene {
     this.renderControls(30, 128, 464, 460);
     this.renderEvents(522, 128, 472, 460);
 
-    pulseHint(this, GAME_WIDTH / 2, GAME_HEIGHT - 34, 'Press ENTER / ESC / (A) / (B) to go back', CssColors.cyan);
-
     const back = () => {
       this.soundMgr.select();
       this.scene.start(SceneKeys.Menu, { sound: this.soundMgr });
@@ -91,7 +88,7 @@ export class HelpScene extends Phaser.Scene {
       [`${this.keyboardActionKeys.ROLLBACK}`, 'Rollback', 'LT'],
       [`${this.keyboardActionKeys.DEPLOY}`, 'Deploy', 'RB'],
       [`${this.keyboardActionKeys.BLOCK}`, 'Block', 'B'],
-      ['SPACE', 'Quick contextual action', 'A'],
+      ['SPACE', 'Bonus / training assist', 'A'],
       ['ENTER', 'Confirm in menus', 'A'],
       ['ESC / P', 'Pause', 'Menu']
     ];

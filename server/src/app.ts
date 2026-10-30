@@ -43,16 +43,16 @@ export function createApp({ store, config }: CreateAppDeps): Application {
   });
   app.use('/api', apiLimiter);
 
-  app.get('/api/health', (_req: Request, res: Response) => {
-    res.json({ ok: true, store: store.kind, entries: store.count() });
+  app.get('/api/health', async (_req: Request, res: Response) => {
+    res.json({ ok: true, store: store.kind, entries: await store.count() });
   });
 
-  app.get('/api/leaderboard/global', (req: Request, res: Response) => {
+  app.get('/api/leaderboard/global', async (req: Request, res: Response) => {
     const limit = clampLimit(req.query.limit, config.maxLimit);
-    res.json({ mode: 'global', entries: toPublicEntries(store.board({ daily: false, limit })) });
+    res.json({ mode: 'global', entries: toPublicEntries(await store.board({ daily: false, limit })) });
   });
 
-  app.get('/api/leaderboard/daily', (req: Request, res: Response) => {
+  app.get('/api/leaderboard/daily', async (req: Request, res: Response) => {
     const limit = clampLimit(req.query.limit, config.maxLimit);
     const seed = Number.parseInt(String(req.query.seed ?? ''), 10);
     if (!Number.isInteger(seed)) {
@@ -61,13 +61,13 @@ export function createApp({ store, config }: CreateAppDeps): Application {
     res.json({
       mode: 'daily',
       seed,
-      entries: toPublicEntries(store.board({ daily: true, seed, limit }))
+      entries: toPublicEntries(await store.board({ daily: true, seed, limit }))
     });
   });
 
-  app.post('/api/scores', submitLimiter, requireSubmitAuth, (req: Request, res: Response) => {
+  app.post('/api/scores', submitLimiter, requireSubmitAuth, async (req: Request, res: Response) => {
     const ipHash = hashIp(req.ip, config.ipHashSalt);
-    const result = submitScore({ store, body: req.body, ipHash, blocklist: config.extraBlocklist });
+    const result = await submitScore({ store, body: req.body, ipHash, blocklist: config.extraBlocklist });
     if (!result.ok) {
       if (result.status === 500) {
         const message = result.cause instanceof Error ? result.cause.message : String(result.cause);

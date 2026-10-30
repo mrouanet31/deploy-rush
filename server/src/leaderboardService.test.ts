@@ -38,28 +38,28 @@ const validBody = () => ({
 });
 
 describe('submitScore', () => {
-  it('rejects an invalid body before touching the store', () => {
+  it('rejects an invalid body before touching the store', async () => {
     const store = createFakeStore();
-    const result = submitScore({ store, body: { ...validBody(), score: -1 }, ipHash: 'h' });
+    const result = await submitScore({ store, body: { ...validBody(), score: -1 }, ipHash: 'h' });
     expect(result.ok).toBe(false);
     expect(result).toMatchObject({ status: 400 });
     expect(store.entries).toHaveLength(0);
   });
 
-  it('stores the ip hash alongside a valid submission', () => {
+  it('stores the ip hash alongside a valid submission', async () => {
     const store = createFakeStore();
-    const result = submitScore({ store, body: validBody(), ipHash: 'abc123' });
+    const result = await submitScore({ store, body: validBody(), ipHash: 'abc123' });
     expect(result.ok).toBe(true);
     expect(result).toMatchObject({ rank: 1 });
     expect(store.entries[0]).toMatchObject({ name: 'Tester' });
   });
 
-  it('returns a 500 result without throwing when the store fails', () => {
+  it('returns a 500 result without throwing when the store fails', async () => {
     const store = createFakeStore();
     store.add = () => {
       throw new Error('disk full');
     };
-    const result = submitScore({ store, body: validBody(), ipHash: 'abc123' });
+    const result = await submitScore({ store, body: validBody(), ipHash: 'abc123' });
     expect(result.ok).toBe(false);
     expect(result).toMatchObject({ status: 500 });
     expect((result as { cause?: unknown }).cause).toBeInstanceOf(Error);

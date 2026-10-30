@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RUN_MODIFIERS } from '../data/runModifiers';
+import { EVENT_DEFINITIONS } from '../data/eventDefinitions';
 import type { PipelineEventDefinition } from '../types';
 import { RunRules } from './RunRules';
 
@@ -21,6 +22,20 @@ function makeDef(overrides: Partial<PipelineEventDefinition> = {}): PipelineEven
 }
 
 describe('RunRules', () => {
+  it.each(Object.values(EVENT_DEFINITIONS))('restricts contextual input for $type', (definition) => {
+    for (const expected of definition.sequence) {
+      expect(RunRules.resolveInput('CONTEXT', expected)).toBe(
+        definition.powerUp ? 'CONTEXT' : null
+      );
+      expect(RunRules.resolveInput('CONTEXT', expected, true)).toBe(expected);
+      expect(RunRules.resolveInput(expected, expected)).toBe(expected);
+    }
+  });
+
+  it('preserves wrong manual actions for normal penalty handling', () => {
+    expect(RunRules.resolveInput('DEPLOY', 'TEST')).toBe('DEPLOY');
+  });
+
   it('passes success effects through unchanged under the classic modifier', () => {
     const outcome = RunRules.resolveSuccess(makeDef());
     expect(outcome).toEqual({ effect: { score: 100 }, scoreOutcome: 'success', dangerous: false });

@@ -10,14 +10,14 @@
  * Highlights the row the player just submitted (matched by name + score).
  */
 import Phaser from 'phaser';
-import { Colors, CssColors, dailySeed, GAME_HEIGHT, GAME_WIDTH, SceneKeys } from '../constants';
+import { Colors, CssColors, dailySeed, GAME_WIDTH, SceneKeys } from '../constants';
 import { DIFFICULTY_PROFILES } from '../data/difficultyProfiles';
 import { DEFAULT_RUN_MODIFIER, RUN_MODIFIERS } from '../data/runModifiers';
 import { LeaderboardApi } from '../systems/LeaderboardApi';
 import { LeaderboardService } from '../systems/LeaderboardService';
 import { GamepadController } from '../systems/GamepadController';
 import { SoundManager } from '../systems/SoundManager';
-import { bodyStyle, createBackdrop, panel, pulseHint, titleStyle } from '../ui';
+import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
 import type { DifficultyId, LeaderboardEntry, LeaderboardScope, RunBadge, RunModifierId } from '../types';
 
 interface LeaderboardData {
@@ -85,11 +85,6 @@ export class LeaderboardScene extends Phaser.Scene {
     this.bindGamepad();
     void this.reload();
 
-    const controls =
-      this.from === SceneKeys.GameOver
-        ? '[ENTER]/(A) Replay  \u00B7  [M]/(B) Menu  \u00B7  [T]/(X) Source  \u00B7  [D]/(Y) Board  \u00B7  [F] Mode'
-        : '[ENTER/ESC]/(A/B) Back  \u00B7  [T]/(X) Source  \u00B7  [D]/(Y) Board  \u00B7  [F] Mode';
-    pulseHint(this, GAME_WIDTH / 2, GAME_HEIGHT - 26, controls, CssColors.cyan);
   }
 
   private bindKeys(): void {
@@ -181,7 +176,7 @@ export class LeaderboardScene extends Phaser.Scene {
     }
 
     this.badge
-      .setText(this.board === 'daily' ? `ONLINE \u00B7 DAILY #${this.seed}` : 'ONLINE \u00B7 GLOBAL')
+      .setText(this.board === 'daily' ? `ONLINE \u00B7 DevFest Challenge #${this.seed}` : 'ONLINE \u00B7 GLOBAL')
       .setColor(CssColors.green);
     this.renderTable(entries);
   }
@@ -197,7 +192,7 @@ export class LeaderboardScene extends Phaser.Scene {
   }
 
   private localBadge(): string {
-    if (this.board === 'daily') return `LOCAL \u00B7 DAILY #${this.seed}`;
+    if (this.board === 'daily') return `LOCAL \u00B7 DevFest Challenge #${this.seed}`;
     const modifier = RUN_MODIFIERS[this.modifier];
     const suffix = modifier.id === DEFAULT_RUN_MODIFIER ? 'GLOBAL' : modifier.shortLabel;
     return `LOCAL \u00B7 ${DIFFICULTY_PROFILES[this.difficulty].label.toUpperCase()} \u00B7 ${suffix}`;

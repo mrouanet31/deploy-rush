@@ -3,29 +3,14 @@
  * seeded Daily Challenge. Up/Down to move, Enter/A to start, Esc/B to go back.
  */
 import Phaser from 'phaser';
-import { Colors, CssColors, GAME_HEIGHT, GAME_WIDTH, SceneKeys } from '../constants';
+import { Colors, CssColors, GAME_WIDTH, SceneKeys } from '../constants';
 import { DIFFICULTY_PROFILES } from '../data/difficultyProfiles';
-import { DEFAULT_RUN_MODIFIER, RUN_MODIFIER_IDS, RUN_MODIFIERS } from '../data/runModifiers';
+import { availableModes, availableModifiers, type GameMode } from '../data/gameModes';
+import { DEFAULT_RUN_MODIFIER, RUN_MODIFIERS } from '../data/runModifiers';
 import { GamepadController } from '../systems/GamepadController';
 import { SoundManager } from '../systems/SoundManager';
-import { bodyStyle, createBackdrop, panel, pulseHint, titleStyle } from '../ui';
-import type { DifficultyId, RunModifierId } from '../types';
-
-interface Option {
-  id: DifficultyId | 'versus';
-  daily?: boolean;
-  label: string;
-  desc: string;
-}
-
-const OPTIONS: Option[] = [
-  { id: 'training', daily: false, label: 'Training Shift', desc: '60s guided run. Learn the hotkeys safely.' },
-  { id: 'versus', label: 'Local Duel', desc: 'P1 pad 1 vs P2 pad 2. Same pipeline, highest score wins.' },
-  { id: 'normal', daily: false, label: 'Normal', desc: 'Relaxed pacing. Learn the pipeline.' },
-  { id: 'hard', daily: false, label: 'Hard', desc: 'Faster events, more sequences.' },
-  { id: 'conference', daily: false, label: 'Conference', desc: 'Punchy booth mode. The default rush.' },
-  { id: 'conference', daily: true, label: 'Daily Challenge', desc: 'Same event sequence for everyone today.' }
-];
+import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
+import type { RunModifierId } from '../types';
 
 const ROW_START_Y = 210;
 const ROW_STEP = 68;
@@ -36,7 +21,8 @@ const ROW_META_RIGHT = 290;
 
 export class DifficultySelectScene extends Phaser.Scene {
   private soundMgr!: SoundManager;
-  private index = 4;
+  private options: GameMode[] = [];
+  private index = 0;
   private modifierIndex = 0;
   private rows: Phaser.GameObjects.Container[] = [];
   private modifierPanel!: Phaser.GameObjects.Rectangle;
@@ -49,22 +35,19 @@ export class DifficultySelectScene extends Phaser.Scene {
 
   init(data: { sound?: SoundManager }): void {
     this.soundMgr = data.sound ?? new SoundManager();
-    this.index = 4;
-    this.modifierIndex = RUN_MODIFIER_IDS.indexOf(DEFAULT_RUN_MODIFIER);
+    this.options = availableModes();
+    this.index = Math.max(0, this.options.findIndex((mode) => mode.daily));
+    this.modifierIndex = 0;
     this.rows = [];
   }
 
   create(): void {
     createBackdrop(this);
     this.add.text(GAME_WIDTH / 2, 76, 'SELECT MODE', titleStyle(46)).setOrigin(0.5);
-    this.add
-      .text(GAME_WIDTH / 2, 120, '\u2191/\u2193 choose \u00B7 \u2190/\u2192 modifier \u00B7 ENTER/(A) start \u00B7 ESC/(B) back', bodyStyle(15, CssColors.textDim))
-      .setOrigin(0.5);
-
     this.renderModifierControl();
 
-    OPTIONS.forEach((opt, i) => {
-      const y = ROW_START_Y + i * ROW_STEP;
+    this.options.forEach((opt, i) => {
+      const y = ROW_START_Y + Math.max(0, 6 - this.options.length) * 24 + i * ROW_STEP;
       const bg = panel(this, 0, 0, ROW_WIDTH, ROW_HEIGHT);
       const metaText = opt.id === 'versus'
         ? '2P'
@@ -82,7 +65,6 @@ export class DifficultySelectScene extends Phaser.Scene {
       this.rows.push(container);
     });
 
-    pulseHint(this, GAME_WIDTH / 2, GAME_HEIGHT - 24, 'Press ENTER to Start', CssColors.green);
     this.refresh();
     this.bindKeys();
     this.bindGamepad();
@@ -118,7 +100,9 @@ export class DifficultySelectScene extends Phaser.Scene {
   }
 
   private move(delta: number): void {
-    this.index = Phaser.Math.Wrap(this.index + delta, 0, OPTIONS.length);
+    if (this.options.length === 0) return;
+    this.index = Phaser.Math.Wrap(this.index + delta, 0, this.options.length);
+    this.modifierIndex = 0;
     this.soundMgr.move();
     this.refresh();
   }
@@ -128,7 +112,7 @@ export class DifficultySelectScene extends Phaser.Scene {
       this.soundMgr.error();
       return;
     }
-    this.modifierIndex = Phaser.Math.Wrap(this.modifierIndex + delta, 0, RUN_MODIFIER_IDS.length);
+    this.modifierIndex = Phaser.Math.Wrap(this.modifierIndex + delta, 0, this.modifiers().length);
     this.soundMgr.move();
     this.refresh();
   }
@@ -145,7 +129,8 @@ export class DifficultySelectScene extends Phaser.Scene {
   }
 
   private start(): void {
-    const opt = OPTIONS[this.index];
+    const opt = this.options[this.index];
+    if (!opt) return;
     this.soundMgr.select();
     if (opt.id === 'versus') {
       this.scene.start(SceneKeys.VersusLobby, { sound: this.soundMgr });
@@ -171,22 +156,29 @@ export class DifficultySelectScene extends Phaser.Scene {
     const modifier = RUN_MODIFIERS[this.selectedModifier()];
     this.modifierPanel.setStrokeStyle(2, applies ? Colors.cyan : Colors.panelLight, applies ? 0.85 : 0.55);
     this.modifierPanel.setFillStyle(Colors.panel, applies ? 0.92 : 0.7);
-    this.modifierLabel.setText(applies ? `MOD  \u2190 ${modifier.label} \u2192` : 'MOD  fixed rules');
+    this.modifierPanel.setVisible(applies);
+    this.modifierLabel.setVisible(applies);
+    this.modifierDesc.setVisible(applies);
+    this.modifierLabel.setText(`MOD  \u2190 ${modifier.label} \u2192`);
     this.modifierLabel.setColor(applies ? CssColors.cyan : CssColors.textDim);
-    this.modifierDesc.setText(applies ? modifier.desc : 'Training, Daily and Duel ignore modifiers');
+    this.modifierDesc.setText(modifier.desc);
   }
 
   private modifierApplies(): boolean {
-    const opt = OPTIONS[this.index];
-    return opt.id !== 'training' && opt.id !== 'versus' && !opt.daily;
+    return this.modifiers().length > 1;
+  }
+
+  private modifiers(): readonly RunModifierId[] {
+    const mode = this.options[this.index];
+    return mode ? availableModifiers(mode) : [DEFAULT_RUN_MODIFIER];
   }
 
   private selectedModifier(): RunModifierId {
-    return RUN_MODIFIER_IDS[this.modifierIndex] ?? DEFAULT_RUN_MODIFIER;
+    return this.modifiers()[this.modifierIndex] ?? DEFAULT_RUN_MODIFIER;
   }
 
   private modifierForSelectedMode(): RunModifierId {
-    return this.modifierApplies() ? this.selectedModifier() : DEFAULT_RUN_MODIFIER;
+    return this.selectedModifier();
   }
 }
 

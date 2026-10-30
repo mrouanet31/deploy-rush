@@ -21,6 +21,16 @@ export interface ResolvedOutcome {
 }
 
 export class RunRules {
+  static resolveInput(
+    action: PlayerAction,
+    nextAction: PlayerAction,
+    training = false
+  ): PlayerAction | null {
+    if (action !== 'CONTEXT') return action;
+    if (training || nextAction === 'CONTEXT') return nextAction;
+    return null;
+  }
+
   /** A completed action sequence. */
   static resolveSuccess(
     def: PipelineEventDefinition,

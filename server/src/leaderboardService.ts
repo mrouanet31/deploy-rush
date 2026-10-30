@@ -17,7 +17,7 @@ export type SubmitScoreResult =
   | { ok: true; rank: number; id: string; board: Entry[] }
   | { ok: false; status: number; error: string; cause?: unknown };
 
-export function submitScore({ store, body, ipHash, blocklist = [] }: SubmitScoreParams): SubmitScoreResult {
+export async function submitScore({ store, body, ipHash, blocklist = [] }: SubmitScoreParams): Promise<SubmitScoreResult> {
   const parsed = validateSubmission(body, { blocklist });
   if (!parsed.ok) {
     return { ok: false, status: parsed.status, error: parsed.error };
@@ -26,12 +26,12 @@ export function submitScore({ store, body, ipHash, blocklist = [] }: SubmitScore
   let entry: Entry;
   let rank: number;
   try {
-    ({ entry, rank } = store.add({ ...parsed.value, ipHash }));
+    ({ entry, rank } = await store.add({ ...parsed.value, ipHash }));
   } catch (err) {
     return { ok: false, status: 500, error: 'failed to save score', cause: err };
   }
 
-  const board = store.board({ daily: entry.daily, seed: entry.seed, limit: 10 });
+  const board = await store.board({ daily: entry.daily, seed: entry.seed, limit: 10 });
   return { ok: true, rank, id: entry.id, board };
 }
 

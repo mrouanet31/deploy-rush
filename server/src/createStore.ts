@@ -4,6 +4,7 @@
  * everywhere). Pass 'json' to force the file store.
  */
 import { Store as JsonStore } from './store.js';
+import { SupabaseEdgeStore } from './SupabaseEdgeStore.js';
 import type { Store } from './types.js';
 
 /** @param forcedKind Defaults to process.env.STORE for backward compatibility. */
@@ -11,6 +12,10 @@ export async function createStore(
   forcedKind: string = (process.env.STORE ?? '').toLowerCase()
 ): Promise<Store> {
   const forced = forcedKind;
+
+  if (forced === 'supabase' || (!forced && process.env.SUPABASE_URL)) {
+    return new SupabaseEdgeStore();
+  }
 
   if (forced === 'json') {
     return new JsonStore();

@@ -64,9 +64,9 @@ export type ValidationResult = { ok: true; value: ValidatedSubmission } | Valida
  * backend must satisfy this contract (see store.conformance.test.ts).
  */
 export interface Store {
-  add(data: SubmitData): { entry: Entry; rank: number };
-  board(opts: BoardOptions): Entry[];
-  count(): number;
+  add(data: SubmitData): { entry: Entry; rank: number } | Promise<{ entry: Entry; rank: number }>;
+  board(opts: BoardOptions): Entry[] | Promise<Entry[]>;
+  count(): number | Promise<number>;
   readonly kind: string;
   close(): void;
 }

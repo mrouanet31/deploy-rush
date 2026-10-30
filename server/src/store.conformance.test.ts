@@ -10,7 +10,9 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { Store as JsonStore } from './store.js';
 import { SqliteStore } from './store-sqlite.js';
-import type { Store, SubmitData } from './types.js';
+import type { SubmitData } from './types.js';
+
+type LocalStore = JsonStore | SqliteStore;
 
 function makeEntry(overrides: Partial<SubmitData> = {}): SubmitData {
   return {
@@ -27,14 +29,14 @@ function makeEntry(overrides: Partial<SubmitData> = {}): SubmitData {
   };
 }
 
-const backends: Array<{ name: string; create: (dir: string) => Store }> = [
+const backends: Array<{ name: string; create: (dir: string) => LocalStore }> = [
   { name: 'json', create: (dir) => new JsonStore(join(dir, 'leaderboard.json')) },
   { name: 'sqlite', create: (dir) => new SqliteStore(join(dir, 'leaderboard.db')) }
 ];
 
 describe.each(backends)('Store contract ($name)', ({ create }) => {
   let dir: string;
-  let store: Store;
+  let store: LocalStore;
 
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), 'deploy-rush-store-'));
