@@ -12,8 +12,13 @@ const API_BASE = '/api';
 const TIMEOUT_MS = 2500;
 
 /**
- * Optional API key for locked-down deployments (backend `SUBMIT_TOKEN`).
+ * Optional shared key for locked-down deployments (backend `SUBMIT_TOKEN`).
  * Set `VITE_SUBMIT_TOKEN` at build/dev time to have the client send it.
+ *
+ * This is NOT a secret: it is baked into the public JS bundle and readable
+ * by anyone. It only deters casual/scripted abuse of an otherwise-open write
+ * endpoint (e.g. a booth kiosk on a private network); it cannot authenticate
+ * individual players. Do not rely on it for real access control.
  */
 const SUBMIT_TOKEN = import.meta.env.VITE_SUBMIT_TOKEN ?? '';
 

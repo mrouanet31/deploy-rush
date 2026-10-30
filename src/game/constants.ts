@@ -194,7 +194,9 @@ export function laneHeight(): number {
   return (Layout.laneAreaBottom - Layout.laneAreaTop) / LANES.length;
 }
 
-/** Deterministic seed derived from today's date (YYYYMMDD). */
+/** Deterministic seed derived from today's UTC date (YYYYMMDD). Must match
+ *  the server's seedForDate (server/src/validation.js) or daily submissions
+ *  get rejected near midnight for players in other timezones. */
 export function dailySeed(date = new Date()): number {
-  return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+  return date.getUTCFullYear() * 10000 + (date.getUTCMonth() + 1) * 100 + date.getUTCDate();
 }

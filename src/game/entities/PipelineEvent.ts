@@ -12,6 +12,7 @@ import {
   laneCenterY,
   laneHeight
 } from '../constants';
+import { PipelineEventState } from '../systems/PipelineEventState';
 import type { PipelineEventDefinition, PlayerAction } from '../types';
 
 const CARD_WIDTH = 128;
@@ -31,9 +32,10 @@ export class PipelineEvent {
   laneIndex: number;
   /** Ordered required actions for this instance (may be a sub-set). */
   readonly requiredSequence: PlayerAction[];
-  /** How many steps of the sequence have been satisfied. */
-  progress = 0;
   handled = false;
+
+  /** Pure sequence-progress model (see systems/PipelineEventState.ts). */
+  private readonly sequenceState: PipelineEventState;
 
   private readonly scene: Phaser.Scene;
   private readonly bg: Phaser.GameObjects.Rectangle;
@@ -60,6 +62,7 @@ export class PipelineEvent {
     this.def = def;
     this.laneIndex = laneIndex;
     this.requiredSequence = requiredSequence;
+    this.sequenceState = new PipelineEventState(requiredSequence, def.altFirstActions);
     this.cardW = def.mega ? MEGA_WIDTH : CARD_WIDTH;
     this.cardH = def.mega ? MEGA_HEIGHT : CARD_HEIGHT;
 
@@ -155,7 +158,12 @@ export class PipelineEvent {
 
   /** The action expected next in the sequence. */
   get nextAction(): PlayerAction {
-    return this.requiredSequence[this.progress];
+    return this.sequenceState.nextAction;
+  }
+
+  /** How many steps of the sequence have been satisfied. */
+  get progress(): number {
+    return this.sequenceState.progress;
   }
 
   private buildHint(): string {
@@ -173,23 +181,15 @@ export class PipelineEvent {
    * Returns 'complete' | 'progress' | 'wrong'.
    */
   applyAction(action: PlayerAction): 'complete' | 'progress' | 'wrong' {
-    const expected = this.nextAction;
-    const firstStep = this.progress === 0;
-    const altOk =
-      firstStep && this.def.altFirstActions ? this.def.altFirstActions.includes(action) : false;
+    const result = this.sequenceState.applyAction(action);
+    if (result === 'wrong') return 'wrong';
 
-    if (action === expected || altOk) {
-      this.progress += 1;
-      this.refreshHint();
-      if (this.progress >= this.requiredSequence.length) {
-        return 'complete';
-      }
-      // pip feedback
+    this.refreshHint();
+    if (result === 'progress') {
       const pip = this.progressPips[this.progress - 1];
       if (pip) pip.fillColor = this.def.color;
-      return 'progress';
     }
-    return 'wrong';
+    return result;
   }
 
   private refreshHint(): void {

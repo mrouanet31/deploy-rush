@@ -10,7 +10,6 @@ import {
   dailySeed,
   GAME_HEIGHT,
   GAME_WIDTH,
-  Gauges,
   LANES,
   LaneColors,
   Layout,
@@ -22,7 +21,6 @@ import { DIFFICULTY_PROFILES } from '../data/difficultyProfiles';
 import {
   DEFAULT_RUN_MODIFIER,
   RUN_MODIFIERS,
-  applyRunModifierToEffect,
   type RunModifierProfile
 } from '../data/runModifiers';
 import { FloatingText } from '../entities/FloatingText';
@@ -35,13 +33,13 @@ import { HudSystem } from '../systems/HudSystem';
 import { InputController, type NavIntent } from '../systems/InputController';
 import { GamepadController, type GamepadButtonName } from '../systems/GamepadController';
 import { InputDeviceService } from '../systems/InputDeviceService';
+import { RunRules } from '../systems/RunRules';
 import { ScoreSystem } from '../systems/ScoreSystem';
 import { SettingsService } from '../systems/SettingsService';
 import { SoundManager } from '../systems/SoundManager';
 import { createBackdrop } from '../ui';
 import type {
   DifficultyId,
-  EventEffect,
   PipelineEventType,
   PlayerAction,
   PlayerInputDevice,
@@ -460,7 +458,8 @@ export class GameScene extends Phaser.Scene {
 
   private resolveSuccess(ev: PipelineEvent): void {
     const def = ev.def;
-    const gained = this.scoreSys.apply(this.modifiedEffect(def.onSuccess, 'success'), 'success');
+    const { effect } = RunRules.resolveSuccess(def, this.modifier);
+    const gained = this.scoreSys.apply(effect, 'success');
     ev.handled = true;
     ev.flashSuccess();
     this.removeEvent(ev);
@@ -729,19 +728,16 @@ export class GameScene extends Phaser.Scene {
 
   private resolveWrong(ev: PipelineEvent, action: PlayerAction): void {
     const def = ev.def;
-    const isDangerous = def.dangerousActions?.includes(action) ?? false;
-    const rawEffect: EventEffect =
-      isDangerous && def.dangerousEffect ? def.dangerousEffect : def.onWrong;
-    const effect = this.modifiedEffect(rawEffect, 'wrong');
+    const { effect, dangerous } = RunRules.resolveWrong(def, action, this.modifier);
 
     const delta = this.scoreSys.apply(effect, 'wrong');
-    this.scoreSys.recordWrongAction(isDangerous);
+    this.scoreSys.recordWrongAction(dangerous);
     ev.handled = true;
     ev.flashWrong();
     this.markWaveEventResolved(ev, false);
     this.time.delayedCall(140, () => this.removeEvent(ev));
 
-    if (isDangerous || effect.majorIncident) {
+    if (dangerous || effect.majorIncident) {
       this.effects.incident();
     } else {
       this.effects.errorFeedback();
@@ -758,7 +754,7 @@ export class GameScene extends Phaser.Scene {
 
   private resolveIgnore(ev: PipelineEvent): void {
     const def = ev.def;
-    const effect = this.modifiedEffect(def.onIgnore, 'ignore');
+    const { effect } = RunRules.resolveIgnore(def, this.modifier);
     const delta = this.scoreSys.apply(effect, 'ignore');
     if (!def.powerUp) this.scoreSys.recordMissedEvent(Boolean(def.critical));
     this.markWaveEventResolved(ev, false);
@@ -787,15 +783,12 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(240, () => ev.destroy());
   }
 
-  private modifiedEffect(effect: EventEffect, outcome: 'success' | 'wrong' | 'ignore'): EventEffect {
-    return applyRunModifierToEffect(effect, outcome, this.modifier);
-  }
-
   private applyInitialModifierState(): void {
-    const s = this.scoreSys.state;
-    s.buildStability = clamp(s.buildStability + (this.modifier.initialBuildStability ?? 0), 0, Gauges.buildMax);
-    s.productionHealth = clamp(s.productionHealth + (this.modifier.initialProductionHealth ?? 0), 0, Gauges.productionMax);
-    s.techDebt = clamp(s.techDebt + (this.modifier.initialTechDebt ?? 0), 0, Gauges.techDebtMax);
+    this.scoreSys.applyInitialAdjustment({
+      buildStability: this.modifier.initialBuildStability,
+      productionHealth: this.modifier.initialProductionHealth,
+      techDebt: this.modifier.initialTechDebt
+    });
   }
 
   private runLabel(baseLabel: string): string {
@@ -917,8 +910,4 @@ export class GameScene extends Phaser.Scene {
     this.trainingPanel = undefined;
     this.trainingText = undefined;
   }
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
 }

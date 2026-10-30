@@ -1,0 +1,4 @@
+{
+  "images": [{"key": "player", "url": "/assets/player.png"}],
+  "audio": [{"key": "hit", "urls": ["/assets/audio/hit.ogg", "/assets/audio/hit.mp3"]}]
+}

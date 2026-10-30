@@ -365,6 +365,10 @@ ALLOWED_ORIGINS=http://localhost:8080 \
 docker compose up --build
 ```
 
+> `VITE_SUBMIT_TOKEN` is baked into the public client bundle and is **not** a
+> secret — it only deters casual/scripted abuse (e.g. on a private booth
+> network). Do not rely on it to authenticate individual players.
+
 Runtime files: [docker-compose.yml](docker-compose.yml), [Dockerfile](Dockerfile),
 [nginx.conf](nginx.conf), and [server/Dockerfile](server/Dockerfile).
 

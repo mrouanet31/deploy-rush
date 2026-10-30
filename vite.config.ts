@@ -20,6 +20,18 @@ export default defineConfig({
   build: {
     outDir: 'dist/deploy-rush',
     target: 'es2020',
-    sourcemap: true
+    // Never ship sourcemaps in the public bundle (they exposed the full
+    // TypeScript source). Enable locally via VITE_SOURCEMAP=true if needed.
+    sourcemap: process.env.VITE_SOURCEMAP === 'true',
+    rollupOptions: {
+      output: {
+        // Phaser dwarfs the game code; its own chunk lets browsers cache it
+        // separately across game-code releases. Rolldown requires a
+        // function form (the object shorthand from Rollup isn't supported).
+        manualChunks(id) {
+          if (id.includes('node_modules/phaser')) return 'phaser';
+        }
+      }
+    }
   }
 });

@@ -25,11 +25,12 @@ import { EffectsSystem } from '../systems/EffectsSystem';
 import { EventSpawner } from '../systems/EventSpawner';
 import { GamepadController, type GamepadButtonName } from '../systems/GamepadController';
 import type { NavIntent } from '../systems/InputController';
+import { RunRules } from '../systems/RunRules';
 import { ScoreSystem } from '../systems/ScoreSystem';
 import { SettingsService } from '../systems/SettingsService';
 import { SoundManager } from '../systems/SoundManager';
 import { bodyStyle, createBackdrop, panel, titleStyle } from '../ui';
-import type { EventEffect, PlayerAction } from '../types';
+import type { PlayerAction } from '../types';
 
 interface VersusData {
   sound?: SoundManager;
@@ -380,7 +381,8 @@ export class VersusScene extends Phaser.Scene {
 
   private resolveSuccess(player: DuelPlayer, ev: PipelineEvent): void {
     const def = ev.def;
-    const gained = player.score.apply(def.onSuccess, 'success');
+    const { effect } = RunRules.resolveSuccess(def);
+    const gained = player.score.apply(effect, 'success');
     ev.handled = true;
     ev.flashSuccess();
     this.removeEvent(ev);
@@ -408,17 +410,15 @@ export class VersusScene extends Phaser.Scene {
 
   private resolveWrong(player: DuelPlayer, ev: PipelineEvent, action: PlayerAction): void {
     const def = ev.def;
-    const isDangerous = def.dangerousActions?.includes(action) ?? false;
-    const effect: EventEffect =
-      isDangerous && def.dangerousEffect ? def.dangerousEffect : def.onWrong;
+    const { effect, dangerous } = RunRules.resolveWrong(def, action);
     const delta = player.score.apply(effect, 'wrong');
-    player.score.recordWrongAction(isDangerous);
+    player.score.recordWrongAction(dangerous);
     ev.handled = true;
     ev.flashWrong();
     this.time.delayedCall(140, () => this.removeEvent(ev));
     player.avatar.react(Colors.red);
 
-    if (isDangerous || effect.majorIncident) this.effects.incident();
+    if (dangerous || effect.majorIncident) this.effects.incident();
     else this.effects.errorFeedback();
 
     FloatingText.spawn(this, ev.x, ev.container.y - 44, `${player.id} ${delta}`, CssColors.red, 22);
@@ -426,13 +426,14 @@ export class VersusScene extends Phaser.Scene {
 
   private resolveIgnore(ev: PipelineEvent): void {
     const def = ev.def;
+    const { effect } = RunRules.resolveIgnore(def);
     if (!def.powerUp) {
       this.p1.score.recordMissedEvent(Boolean(def.critical));
       this.p2.score.recordMissedEvent(Boolean(def.critical));
     }
-    this.p1.score.apply(def.onIgnore, 'ignore');
-    this.p2.score.apply(def.onIgnore, 'ignore');
-    if (def.onIgnore.majorIncident) this.effects.incident();
+    this.p1.score.apply(effect, 'ignore');
+    this.p2.score.apply(effect, 'ignore');
+    if (effect.majorIncident) this.effects.incident();
     else if (def.critical) this.effects.errorFeedback();
     ev.destroy();
   }

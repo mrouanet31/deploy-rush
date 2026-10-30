@@ -39,6 +39,10 @@ jobs:
 
       - name: Build production bundle
         run: npm run build
+        env:
+          # Docker/nginx serves the game at the domain root; Pages needs the
+          # repo subpath so asset URLs resolve correctly.
+          VITE_BASE_PATH: /deploy-rush/
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6

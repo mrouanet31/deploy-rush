@@ -15,10 +15,10 @@ import type {
 } from '../types';
 
 export class ScoreSystem {
-  readonly state: GameState;
+  private readonly _state: GameState;
 
   constructor(matchDuration: number) {
-    this.state = {
+    this._state = {
       score: 0,
       combo: 0,
       comboMultiplier: 1,
@@ -41,6 +41,16 @@ export class ScoreSystem {
   }
 
   /**
+   * Read-only snapshot of the live game state. External code (scenes, HUD)
+   * must go through the named methods below to mutate it — this prevents
+   * scenes from reaching in and changing gauges directly (see
+   * PRODUCTION_READINESS.md, A1.3).
+   */
+  get state(): Readonly<GameState> {
+    return this._state;
+  }
+
+  /**
    * Applies an effect. `outcome` controls combo behaviour:
    *   - 'success' increments the combo and scales positive points.
    *   - 'wrong' always breaks the combo (player error).
@@ -48,7 +58,7 @@ export class ScoreSystem {
    * Returns the delta points actually awarded (after multiplier).
    */
   apply(effect: EventEffect, outcome: 'success' | 'wrong' | 'ignore'): number {
-    const s = this.state;
+    const s = this._state;
     let points = effect.score ?? 0;
 
     if (outcome === 'success' && points > 0) {
@@ -88,38 +98,58 @@ export class ScoreSystem {
   }
 
   recordWrongAction(dangerous: boolean): void {
-    this.state.wrongActions += 1;
-    if (dangerous) this.state.dangerousActions += 1;
+    this._state.wrongActions += 1;
+    if (dangerous) this._state.dangerousActions += 1;
   }
 
   recordMissedEvent(critical: boolean): void {
-    this.state.eventsMissed += 1;
-    if (critical) this.state.criticalMisses += 1;
+    this._state.eventsMissed += 1;
+    if (critical) this._state.criticalMisses += 1;
   }
 
   recordPowerUpUsed(): void {
-    this.state.powerUpsUsed += 1;
+    this._state.powerUpsUsed += 1;
   }
 
   recordWaveStarted(): void {
-    this.state.wavesStarted += 1;
+    this._state.wavesStarted += 1;
   }
 
   recordWaveCleared(): void {
-    this.state.wavesCleared += 1;
+    this._state.wavesCleared += 1;
   }
 
   tickTimer(deltaSeconds: number): void {
-    this.state.timeLeft = Math.max(0, this.state.timeLeft - deltaSeconds);
+    this._state.timeLeft = Math.max(0, this._state.timeLeft - deltaSeconds);
+  }
+
+  /**
+   * Applies one-time gauge offsets from a run modifier's initial state,
+   * clamped to valid ranges. Replaces direct `state.field = ...` mutation
+   * from scenes (see PRODUCTION_READINESS.md, A1.3).
+   */
+  applyInitialAdjustment(adjustment: {
+    buildStability?: number;
+    productionHealth?: number;
+    techDebt?: number;
+  }): void {
+    const s = this._state;
+    s.buildStability = clamp(s.buildStability + (adjustment.buildStability ?? 0), 0, Gauges.buildMax);
+    s.productionHealth = clamp(
+      s.productionHealth + (adjustment.productionHealth ?? 0),
+      0,
+      Gauges.productionMax
+    );
+    s.techDebt = clamp(s.techDebt + (adjustment.techDebt ?? 0), 0, Gauges.techDebtMax);
   }
 
   isGameOver(): boolean {
-    const s = this.state;
+    const s = this._state;
     return s.timeLeft <= 0 || s.buildStability <= 0 || s.productionHealth <= 0;
   }
 
   gameOverReason(): string {
-    const s = this.state;
+    const s = this._state;
     if (s.buildStability <= 0) return 'Build collapsed — pipeline is red.';
     if (s.productionHealth <= 0) return 'Production went down — incident!';
     return "Time's up — shift over.";
@@ -127,7 +157,7 @@ export class ScoreSystem {
 
   /** Compute the final breakdown with end-of-game bonuses + title. */
   computeBreakdown(): ScoreBreakdown {
-    const s = this.state;
+    const s = this._state;
     const baseScore = s.score;
 
     const buildBonus = Math.round(s.buildStability * 4);
@@ -162,7 +192,7 @@ export class ScoreSystem {
   }
 
   private computeBadges(cleanRun: boolean): RunBadge[] {
-    const s = this.state;
+    const s = this._state;
     const earned: RunBadge[] = [];
 
     if (cleanRun) {
@@ -233,7 +263,7 @@ export class ScoreSystem {
   }
 
   private computeTitle(cleanRun: boolean): string {
-    const s = this.state;
+    const s = this._state;
     if (cleanRun && s.featuresShipped >= 12) return 'Software Craftsman';
     if (s.buildStability >= 80 && s.majorIncidents === 0) return 'Build Guardian';
     if (s.featuresShipped >= 15) return 'Deploy Master';
