@@ -187,7 +187,12 @@ export class MenuScene extends Phaser.Scene {
 
   private openLeaderboard(): void {
     this.soundMgr.select();
-    this.scene.start(SceneKeys.Leaderboard, { sound: this.soundMgr, from: SceneKeys.Menu });
+    this.scene.start(SceneKeys.Leaderboard, {
+      sound: this.soundMgr,
+      from: SceneKeys.Menu,
+      daily: true,
+      seed: dailySeed()
+    });
   }
 
   private openOptions(): void {
